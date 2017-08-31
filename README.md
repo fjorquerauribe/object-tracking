@@ -1,1 +1,3 @@
 # object-tracking
+
+OpenCV required
