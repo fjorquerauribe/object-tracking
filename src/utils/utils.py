@@ -2,12 +2,10 @@ import os
 import cv2
 import numpy as np
 
-# class Rectangle:
-#     def __init__(self, _p, _p2, _p3, _p4):
-#         self.p1 = _p1
-#         self.p2 = _p2
-#         self.p3 = _p3
-#         self.p4 = _p4
+class Rectangle:
+     def __init__(self, x_min, y_min, x_max, y_max):
+         self.p_min = (x_min,y_min)
+         self.p_max = (x_max,y_max)
 
 def read_images(path_to_images_list=''):
     if path_to_images_list=='':
@@ -34,8 +32,21 @@ def read_groundtruth(path_to_groundtruth=''):
             points = np.array([ [int(float(line[0])),int(float(line[1]))], \
             [int(float(line[2])),int(float(line[3]))], [int(float(line[4])),int(float(line[5]))],\
             [int(float(line[6])),int(float(line[7]))] ], np.int32)
-            points = points.reshape((-1,1,2))
-            groundtruth.append(points)
+            x_min = points[0][0]
+            y_min = points[0][1]
+            x_max = points[0][0]
+            y_max = points[0][1]
+            for p in points:
+                if p[0] < x_min:
+                    x_min = p[0]
+                if p[1] < y_min:
+                    y_min = p[1]
+                if p[0] > x_max:
+                    x_max = p[0]
+                if p[1] > y_max:
+                    y_max = p[1]
+            rect = Rectangle(x_min, y_min, x_max, y_max)
+            groundtruth.append(rect)
     return groundtruth
 
 
