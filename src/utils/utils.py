@@ -49,6 +49,12 @@ def read_groundtruth(path_to_groundtruth=''):
             groundtruth.append(rect)
     return groundtruth
 
+def get_overlap_ratio(A, B):
+    dx = min(A[0] + A[2], B[0] + B[2]) - max(A[0], B[0])
+    dy = min(A[1] + A[3], B[1] + B[3]) - max(A[1], B[1])
+    if (dx >= 0) and (dy >= 0):
+        return (dx * dy) / float(B[2] * B[3])
+    return 0.0
 
 def read_video(video_file=''):
     pass

@@ -1,8 +1,8 @@
 import numpy as np
 import cv2
 import argparse as ap
-from src.utils import utils
-from src.models.particle_filter import ParticleFilter
+from utils import utils
+from models.particle_filter import ParticleFilter
 
 if __name__ == '__main__':
     parser = ap.ArgumentParser()
@@ -11,6 +11,7 @@ if __name__ == '__main__':
     group1.add_argument('-v', '--video', help='Path to video file')
     group2 = parser.add_argument_group()
     group2.add_argument('-g', '--groundtruth', help='Path to groundtruth file', required=True)
+    group2.add_argument('-npart', '--num_particles', help='Particle number of the Particle Filter')
     args = vars(parser.parse_args())
 
     cv2.namedWindow('Tracker', cv2.WINDOW_NORMAL)
@@ -20,10 +21,10 @@ if __name__ == '__main__':
         groundtruth = utils.read_groundtruth(args['groundtruth'])
         #print 'images len: ' + str(len(images))
         #print 'groundtruth len: ' + str(len(groundtruth))
-        pf = ParticleFilter(100)
+        pf = ParticleFilter(int(args['num_particles']))
         for (img, g) in zip(images, groundtruth):
-            cv2.rectangle(img, g.p_min, g.p_max, (255,0,0), 2)
             pf.initialize(img, g, True)
+            cv2.rectangle(img, g.p_min, g.p_max, (0,0,255), 2)
             cv2.imshow('Tracker', img)
             cv2.waitKey(1)
         cv2.destroyWindow('Tracker')
