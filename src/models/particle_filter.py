@@ -17,8 +17,8 @@ THRESHOLD = 10
 
 class ParticleFilter:
     DIM = 4 # x,y,width,height
-    POS_STD_X = 1.0
-    POS_STD_Y = 1.0
+    POS_STD_X = 3.0
+    POS_STD_Y = 3.0
     SCALE_STD_WIDTH = 0.0
     SCALE_STD_HEIGHT = 0.0
     OVERLAP_RATIO = 0.2
@@ -44,7 +44,7 @@ class ParticleFilter:
     def reinitialize(self):
         self.initialized = False
 
-    def initialize(self, image, groundtruth, draw = False):
+    def initialize(self, image, groundtruth):
         self.reference = [groundtruth.p_min[0], groundtruth.p_min[1], \
             groundtruth.p_max[0] - groundtruth.p_min[0], \
             groundtruth.p_max[1] - groundtruth.p_min[1]]
@@ -140,17 +140,22 @@ class ParticleFilter:
         self.resample()
 
     def resample(self):
-        self.weights = normalize(self.weights[:,np.newaxis], axis = 0).ravel()
-        ESS = 1/float(np.sum(np.sqrt(self.weights)))
-
-        if ESS > THRESHOLD:
+        self.weights = normalize(self.weights[:,np.newaxis], axis = 0, norm='l1').ravel()
+        print np.square(self.weights)
+        ESS = 1/float(np.sum(np.square(self.weights)))
+        print ESS,THRESHOLD
+        if ESS < THRESHOLD:
+            print 'resampling'
+            print self.weights
+            print residual_resample(self.weights)
             newStates = np.empty((len(self.weights), self.DIM), dtype=int)
             newStates = self.states[residual_resample(self.weights)]
             self.weights = np.ones((self.num_particles), dtype = int) * ( 1/float(self.num_particles))
 
-
-
-        print self.weights
+    def estimate(self, image, color = (255,255, 0), draw = True):
+        estimate = np.mean(self.states, axis = 0, dtype=int)
+        cv2.rectangle(image, (estimate[0], estimate[1]), (estimate[0] + estimate[2], estimate[1] + estimate[3]), color, 1)
+        return estimate
 
     def draw_particles(self, image, color = (255,0,0)):
         for state in self.states:

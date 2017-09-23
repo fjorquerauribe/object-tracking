@@ -30,12 +30,13 @@ if __name__ == '__main__':
             grayImg = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
             if not(pf.initialized):
-                pf.initialize(grayImg, g, True)
+                pf.initialize(grayImg, g)
             else:
                 pf.predict()
                 pf.update(grayImg)
-            pf.draw_particles(img)
-
+                pf.draw_particles(img)
+                pf.estimate(img, True)
+                
             elapse_time = time.time() - start_time
             #print elapse_time
 
