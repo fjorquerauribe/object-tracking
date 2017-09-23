@@ -1,6 +1,7 @@
 import os
 import cv2
 import numpy as np
+import math
 
 class Rectangle:
      def __init__(self, x_min, y_min, x_max, y_max):
@@ -17,7 +18,7 @@ def read_images(path_to_images_list=''):
     images = []
 
     for imgFile in imageFiles:
-        img = cv2.imread(path_to_images+'/'+imgFile)
+        img = cv2.imread(path_to_images+'/'+imgFile) # BGR
         images.append(img)
     return images
 
@@ -55,6 +56,10 @@ def get_overlap_ratio(A, B):
     if (dx >= 0) and (dy >= 0):
         return (dx * dy) / float(B[2] * B[3])
     return 0.0
+
+def bhatta(hist1, hist2):
+    coef = np.sqrt(np.multiply(hist1,hist2)) / np.sqrt(np.sum(hist1) * np.sum(hist2))
+    return np.sqrt(1 - np.sum(coef))
 
 def read_video(video_file=''):
     pass

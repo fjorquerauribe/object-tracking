@@ -3,6 +3,9 @@ import cv2
 import argparse as ap
 from utils import utils
 from models.particle_filter import ParticleFilter
+#from utils import utils
+
+import time
 
 if __name__ == '__main__':
     parser = ap.ArgumentParser()
@@ -23,7 +26,19 @@ if __name__ == '__main__':
         #print 'groundtruth len: ' + str(len(groundtruth))
         pf = ParticleFilter(int(args['num_particles']))
         for (img, g) in zip(images, groundtruth):
-            pf.initialize(img, g, True)
+            start_time = time.time()
+            grayImg = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+
+            if not(pf.initialized):
+                pf.initialize(grayImg, g, True)
+            else:
+                pf.predict()
+                pf.update(grayImg)
+            pf.draw_particles(img)
+
+            elapse_time = time.time() - start_time
+            #print elapse_time
+
             cv2.rectangle(img, g.p_min, g.p_max, (0,0,255), 2)
             cv2.imshow('Tracker', img)
             cv2.waitKey(1)
