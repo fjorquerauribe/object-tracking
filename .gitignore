@@ -2,3 +2,5 @@ data/
 build/
 backup/
 *.pyc
+.vscode/
+scripts/images/

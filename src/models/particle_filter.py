@@ -7,18 +7,13 @@ from filterpy.monte_carlo import residual_resample
 
 import warnings
 import sys
-#from itertools import takewhile
 
-# class Rectangle:
-#      def __init__(self, x_min, y_min, x_max, y_max):
-#          self.p_min = (x_min,y_min)
-#          self.p_max = (x_max,y_max)
 THRESHOLD = 10
 
 class ParticleFilter:
     DIM = 4 # x,y,width,height
-    POS_STD_X = 3.0
-    POS_STD_Y = 3.0
+    POS_STD_X = 1.0
+    POS_STD_Y = 1.0
     SCALE_STD_WIDTH = 0.0
     SCALE_STD_HEIGHT = 0.0
     OVERLAP_RATIO = 0.2
@@ -28,6 +23,7 @@ class ParticleFilter:
     weights = []
     num_particles = 100
     reference = []
+    histReference = []
     initialized = False
     img_width = 0
     img_height = 0
@@ -103,7 +99,10 @@ class ParticleFilter:
                 cv2.rectangle(image, (state[0],state[1]), (state[0] + state[2], state[1] + state[3]), (0,255,0), 1)
         '''
         # Set initial weights
-        self.weights = np.ones((self.num_particles), dtype = int) * ( 1/float(self.num_particles))
+        self.weights = np.ones((self.num_particles), dtype = float) * ( 1/float(self.num_particles))
+
+        self.histReference = cv2.calcHist( [ image[self.reference[0]:self.reference[0]+self.reference[2],\
+        self.reference[1]:self.reference[1]+self.reference[3]]], [0], None, [256], [0,256])
 
         self.initialized = True
 
@@ -129,25 +128,21 @@ class ParticleFilter:
              self.img_height - state[1] for state in self.states]
 
     def update(self, image):
-        histReference = hist = cv2.calcHist( [ image[self.reference[0]:self.reference[0]+self.reference[2],\
-        self.reference[1]:self.reference[1]+self.reference[3]]], [0], None, [256], [0,256])
-
         for (state, idx) in zip(self.states, xrange(len(self.weights))):
-            hist = cv2.calcHist( [ image[state[0]:state[0]+state[2],state[1]:state[1]+state[3]]],\
+            crop_img = image[state[0]:state[0]+state[2], state[1]:state[1]+state[3]]
+            resized_img = cv2.resize(crop_img, (self.reference[2], self.reference[3]))
+            hist = cv2.calcHist( [ crop_img ],\
              [0], None, [256], [0,256])
-            self.weights[idx] = cv2.compareHist(histReference, hist, cv2.HISTCMP_CHISQR) #cv2.HISTCMP_BHATTACHARYYA
+            self.weights[idx] = cv2.compareHist(self.histReference, hist, cv2.HISTCMP_BHATTACHARYYA) #cv2.HISTCMP_CHISQR
             #print self.weights[idx]
         self.resample()
 
     def resample(self):
         self.weights = normalize(self.weights[:,np.newaxis], axis = 0, norm='l1').ravel()
-        print np.square(self.weights)
+        #print np.square(self.weights)
         ESS = 1/float(np.sum(np.square(self.weights)))
         print ESS,THRESHOLD
-        if ESS < THRESHOLD:
-            print 'resampling'
-            print self.weights
-            print residual_resample(self.weights)
+        if ESS > THRESHOLD:
             newStates = np.empty((len(self.weights), self.DIM), dtype=int)
             newStates = self.states[residual_resample(self.weights)]
             self.weights = np.ones((self.num_particles), dtype = int) * ( 1/float(self.num_particles))

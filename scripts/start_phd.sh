@@ -1,0 +1,1 @@
+python ../src/test_phd.py -i ../data/$1/$2/$3/img1/images.lst -g ../data/$1/$2/$3/gt/gt.txt -d ../data/$1/$2/$3/det/det.txt -npart $4
