@@ -8,7 +8,7 @@ from models.phd_filter import PHDFilter
 if __name__ == '__main__':
     parser = ap.ArgumentParser()
     group1 = parser.add_mutually_exclusive_group(required = True)
-    group1.add_argument('-i', '--images', help = 'Path to list of images')
+    group1.add_argument('-i', '--images', help = 'Path to images folder')
     group1.add_argument('-v', '--video', help = 'Path to video file')
     group2 = parser.add_argument_group()
     group2.add_argument('-g', '--groundtruth', help = 'Path to groundtruth file', required = True)
@@ -17,31 +17,40 @@ if __name__ == '__main__':
     args = vars(parser.parse_args())
 
     generator = ImageGenerator(args['images'], args['groundtruth'], args['detections'])
+    
     cv2.namedWindow('MTT', cv2.WINDOW_NORMAL)
     
     if args['images']:
         filter = PHDFilter(int(args['particles_batch']))
-
-        idx = 0
+        verbose = False
+        idx = 1
         for i in xrange(generator.get_sequences_len()):
             img = generator.get_frame(i)
             gt = generator.get_groundtruth(i)
             detections = generator.get_detections(i)
             
             print '-------------------------------------'
+            print 'frame: ' + str(i)
             print 'groundtruth target: ' + str(len(gt))
+            estimates = []
             if not filter.is_initialized():
                 filter.initialize(img, detections)
+                estimates = filter.estimate(img, draw = True, verbose = verbose)
                 #filter.draw_particles(img)
             else:
-                filter.predict()
-                filter.update(img, detections)
-                filter.estimate(img, draw = True)
+                filter.predict(verbose = verbose)
+                filter.update(img, detections, verbose = verbose)
+                estimates = filter.estimate(img, draw = True, verbose = verbose)
                 #filter.draw_particles(img)
-            cv2.imwrite('./images/' + str(idx) + '.png', img)
+            
+            if estimates is not None:
+                for e in estimates:
+                    print str(idx) + ',' + str(e.label) + ',' + str(e.bbox.p_min[0]) + ',' + str(e.bbox.p_min[1]) + ','\
+                    + str(e.bbox.p_max[0] - e.bbox.p_min[0]) + ',' + str(e.bbox.p_max[1] - e.bbox.p_min[1])\
+                    + ',1,-1,-1,-1'
             idx+=1
             
             cv2.imshow('MTT', img)
             cv2.waitKey(1)
     
-    cv2.destroyWindow('MTT')
+    #cv2.destroyWindow('MTT')

@@ -5,6 +5,7 @@ import math
 from sklearn.metrics.pairwise import euclidean_distances
 
 from scipy.optimize import linear_sum_assignment
+from scipy.spatial.distance import cosine
 
 class Rectangle:
      def __init__(self, x_min, y_min, x_max, y_max):
@@ -45,3 +46,36 @@ def cost_matrix(tracks, new_tracks):
     
     cost = euclidean_distances(tracks_centroids, new_tracks_centroids)
     return cost
+
+def appearance_affinity(feat1, feat2):
+    appearance_affinity_matrix = np.empty((feat1.shape[0], feat2.shape[0]))
+
+    for i in xrange(feat1.shape[0]):
+        for j in xrange(feat2.shape[0]):
+            appearance_affinity_matrix[i,j] = cosine(feat1[i], feat2[j])
+    return appearance_affinity_matrix
+
+def motion_affinity(tracks1, tracks2, w = 0.1):
+    motion_affinity_matrix = np.empty((len(tracks1), len(tracks2)))
+    
+    for i in xrange(len(tracks1)):
+        for j in xrange(len(tracks2)):
+            motion_affinity_matrix[i,j] = np.exp( -w * \
+            ( np.power( (float((tracks1[i].bbox.p_min[0] - tracks2[j].bbox.p_min[0])) / (tracks2[j].bbox.p_max[0] - tracks2[j].bbox.p_min[0])), 2) \
+            + np.power( (float((tracks1[i].bbox.p_min[1] - tracks2[j].bbox.p_min[1])) / (tracks2[j].bbox.p_max[1] - tracks2[j].bbox.p_min[1])), 2)))
+    return motion_affinity_matrix
+
+def shape_affinity(tracks1, tracks2, w = 0.1):
+    shape_affinity_matrix = np.empty((len(tracks1), len(tracks2)))
+
+    for i in xrange(len(tracks1)):
+        for j in xrange(len(tracks2)):
+            w_track1 = tracks1[i].bbox.p_max[0] - tracks1[i].bbox.p_min[0]
+            h_track1 = tracks1[i].bbox.p_max[1] - tracks1[i].bbox.p_min[1]
+            
+            w_track2 = tracks2[j].bbox.p_max[0] - tracks2[j].bbox.p_min[0]
+            h_track2 = tracks2[j].bbox.p_max[1] - tracks2[j].bbox.p_min[1]
+            shape_affinity_matrix[i,j] = np.exp( -w * \
+            ( ( float(np.absolute(h_track1 - h_track2))/(h_track1 + h_track2) )\
+            + ( float(np.absolute(w_track1 - w_track2))/(w_track1 + w_track2) ) ))
+    return shape_affinity_matrix

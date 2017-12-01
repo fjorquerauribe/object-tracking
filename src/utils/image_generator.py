@@ -61,20 +61,20 @@ class MTTImageGenerator():
     images = {}
     groundtruth = {}
     detections = {}
-    def __init__(self, path_to_images_list='', path_to_groundtruth='', path_to_det=''):
-        self.read_images(path_to_images_list)
+    def __init__(self, path_to_images='', path_to_groundtruth='', path_to_det=''):
+        self.read_images(path_to_images)
         self.read_groundtruth(path_to_groundtruth)
         self.read_detections(path_to_det)
     
-    def read_images(self, path_to_images_list = ''):
-        if path_to_images_list=='':
+    def read_images(self, path_to_images = ''):
+        if path_to_images == '':
             exit()
-        with open(path_to_images_list, 'rb') as f:
-            imageFiles = [line.strip() for line in f]
-        path_to_images = os.path.dirname(path_to_images_list)
-        for i in xrange(len(imageFiles)):
-            img = cv2.imread(path_to_images+'/'+imageFiles[i]) # BGR
-            self.images[i] = img
+        idx = 1
+        img = cv2.imread(path_to_images + str(idx).zfill(6) + '.jpg')
+        while img is not None:
+            self.images[idx-1] = img
+            idx+=1
+            img = cv2.imread(path_to_images + str(idx).zfill(6) + '.jpg')
 
     def read_detections(self, path_to_det = ''):
         if path_to_det == '':
@@ -120,7 +120,10 @@ class MTTImageGenerator():
         return self.images[frame_num]
 
     def get_groundtruth(self, frame_num):
-        return self.groundtruth[frame_num]
+        if frame_num in self.groundtruth:
+            return self.groundtruth[frame_num]
+        else:
+            return []
 
     def get_detections(self, frame_num):
         if frame_num in self.detections:
