@@ -61,6 +61,9 @@ class MTTImageGenerator():
     images = {}
     groundtruth = {}
     detections = {}
+    det_weights = {}
+    features = {}
+    FEATURES_DIM = 2048
     def __init__(self, path_to_images='', path_to_groundtruth='', path_to_det=''):
         self.read_images(path_to_images)
         self.read_groundtruth(path_to_groundtruth)
@@ -87,13 +90,18 @@ class MTTImageGenerator():
                 num_frame = int(line[0])
                 if num_frame - 1 not in self.detections:
                     self.detections[num_frame - 1] = []
+                    self.features[num_frame - 1] = np.empty((0, self.FEATURES_DIM))
+                    self.det_weights[num_frame - 1] = np.empty(0)
                 x_min = int(float(line[2]))
                 y_min = int(float(line[3]))
                 x_max = int(float(line[2]) + float(line[4]))
                 y_max = int(float(line[3]) + float(line[5]))
                 conf = float(line[6])
+                self.det_weights[num_frame - 1] = np.append(self.det_weights[num_frame - 1], float(line[6]))
+                feat = map(float, line[10:])
                 detection = Detection(x_min, y_min, x_max, y_max, conf)
                 self.detections[num_frame - 1].append(detection)
+                self.features[num_frame - 1] = np.append(self.features[num_frame - 1], np.array([feat]), axis = 0)
 
     def read_groundtruth(self, path_to_groundtruth = ''):
         if path_to_groundtruth == '':
@@ -131,5 +139,14 @@ class MTTImageGenerator():
         else:
             return []
 
-    
+    def get_detection_weights(self, frame_num):
+        if frame_num in self.det_weights:
+            return self.det_weights[frame_num]
+        else:
+            return None
 
+    def get_features(self, frame_num):
+        if frame_num in self.features:
+            return self.features[frame_num]
+        else:
+            return None

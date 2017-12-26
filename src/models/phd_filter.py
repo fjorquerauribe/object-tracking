@@ -50,7 +50,7 @@ class PHDFilter:
 
     def reinitialize(self):
         self.initialized = False
-
+        
     def initialize(self, img, detections):
         if len(detections) > 0:
             self.detector = Resnet()

@@ -1,7 +1,7 @@
-data/
 build/
 backup/
 *.pyc
 .vscode/
 scripts/images/
 scripts/results/
+data/

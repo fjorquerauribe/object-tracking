@@ -31,6 +31,13 @@ def get_overlap_ratio(A, B):
         return (dx * dy) / float(B[2] * B[3])
     return 0.0
 
+def get_overlap_area(A, B):
+    dx = min(A[0] + A[2], B[0] + B[2]) - max(A[0], B[0])
+    dy = min(A[1] + A[3], B[1] + B[3]) - max(A[1], B[1])
+    if (dx >= 0) and (dy >= 0):
+        return dx * dy
+    return 0.0
+
 def bhatta(hist1, hist2):
     coef = np.sqrt(np.multiply(hist1,hist2)) / np.sqrt(np.sum(hist1) * np.sum(hist2))
     return np.sqrt(1 - np.sum(coef))

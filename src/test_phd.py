@@ -29,9 +29,10 @@ if __name__ == '__main__':
             gt = generator.get_groundtruth(i)
             detections = generator.get_detections(i)
             
-            print '-------------------------------------'
-            print 'frame: ' + str(i)
-            print 'groundtruth target: ' + str(len(gt))
+            if verbose:
+                print '-------------------------------------'
+                print 'frame: ' + str(i)
+                print 'groundtruth target: ' + str(len(gt))
             estimates = []
             if not filter.is_initialized():
                 filter.initialize(img, detections)
