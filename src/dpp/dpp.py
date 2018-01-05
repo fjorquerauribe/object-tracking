@@ -43,6 +43,7 @@ class DPP:
             quality_term = self.get_quality_term(weights, penalty)
             similarity_term = self.get_similarity_term(features, intersection, sqrtArea)
             return self.greedy_solve(detections, quality_term, similarity_term)
+        return np.array([])
 
     def get_quality_term(self, weights, penalty):
         qt = weights * penalty
@@ -61,7 +62,7 @@ class DPP:
         dets = detections[:]
         
         prob = quality_term * np.diag(similarity_term)
-        print 'diag: ' + str(np.diag(similarity_term))
+        #print 'diag: ' + str(np.diag(similarity_term))
         argMax = prob.argmax()
         prob = prob[argMax]
         
@@ -73,7 +74,7 @@ class DPP:
             for i in xrange(len(dets)):
                 tmpProb = quality_term[np.append(indices,i)].prod() * np.linalg.det(similarity_term[np.ix_(np.append(indices,i),np.append(indices,i))])
                 
-                print 'qt: ' + str(quality_term[np.append(indices,i)].prod()) + ' | det: ' + str(np.linalg.det(similarity_term[np.ix_(np.append(indices,i),np.append(indices,i))]))
+                #print 'qt: ' + str(quality_term[np.append(indices,i)].prod()) + ' | det: ' + str(np.linalg.det(similarity_term[np.ix_(np.append(indices,i),np.append(indices,i))]))
                 
                 if tmpProb > prob:
                     argMax = i
@@ -85,4 +86,9 @@ class DPP:
                 del dets[argMax]
             else:
                 break
-        return [detections[i] for i in indices]
+        
+        if type(indices) is np.ndarray:
+            return indices
+            #return [detections[i] for i in indices]
+        else:
+            return np.array([])
