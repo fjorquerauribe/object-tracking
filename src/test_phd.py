@@ -28,6 +28,10 @@ if __name__ == '__main__':
             img = generator.get_frame(i)
             gt = generator.get_groundtruth(i)
             detections = generator.get_detections(i)
+
+            print detections
+            for det in detections:
+                cv2.rectangle(img, det.bbox, (0, 255, 0), 2)
             
             if verbose:
                 print '-------------------------------------'
@@ -36,13 +40,13 @@ if __name__ == '__main__':
             estimates = []
             if not filter.is_initialized():
                 filter.initialize(img, detections)
-                estimates = filter.estimate(img, draw = True, verbose = verbose)
-                #filter.draw_particles(img)
+                estimates = filter.estimate(img, draw = False, verbose = verbose)
+                filter.draw_particles(img)
             else:
                 filter.predict(verbose = verbose)
                 filter.update(img, detections, verbose = verbose)
-                estimates = filter.estimate(img, draw = True, verbose = verbose)
-                #filter.draw_particles(img)
+                estimates = filter.estimate(img, draw = False, verbose = verbose)
+                filter.draw_particles(img)
             
             if estimates is not None:
                 for e in estimates:

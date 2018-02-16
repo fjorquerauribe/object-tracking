@@ -1,6 +1,7 @@
 from utils import utils
 import scipy.stats as stats
 import numpy as np
+import math
 import cv2
 from sklearn.preprocessing import normalize
 from filterpy.monte_carlo import residual_resample
@@ -133,23 +134,24 @@ class ParticleFilter:
             resized_img = cv2.resize(crop_img, (self.reference[2], self.reference[3]))
             hist = cv2.calcHist( [ crop_img ],\
              [0], None, [256], [0,256])
-            self.weights[idx] = cv2.compareHist(self.histReference, hist, cv2.HISTCMP_BHATTACHARYYA) #cv2.HISTCMP_CHISQR
-            #print self.weights[idx]
+            self.weights[idx] = math.exp(-1.0 * cv2.compareHist(self.histReference, hist, cv2.HISTCMP_BHATTACHARYYA)) #cv2.HISTCMP_CHISQR
+            print cv2.compareHist(self.histReference, hist, cv2.HISTCMP_BHATTACHARYYA)#self.weights[idx]
         self.resample()
 
     def resample(self):
         self.weights = normalize(self.weights[:,np.newaxis], axis = 0, norm='l1').ravel()
         #print np.square(self.weights)
         ESS = 1/float(np.sum(np.square(self.weights)))
-        print ESS,THRESHOLD
+        #print ESS,THRESHOLD
         if ESS > THRESHOLD:
             newStates = np.empty((len(self.weights), self.DIM), dtype=int)
-            newStates = self.states[residual_resample(self.weights)]
+            self.states = self.states[residual_resample(self.weights)]
             self.weights = np.ones((self.num_particles), dtype = int) * ( 1/float(self.num_particles))
 
     def estimate(self, image, color = (255,255, 0), draw = True):
         estimate = np.mean(self.states, axis = 0, dtype=int)
-        cv2.rectangle(image, (estimate[0], estimate[1]), (estimate[0] + estimate[2], estimate[1] + estimate[3]), color, 1)
+        if draw:
+            cv2.rectangle(image, (estimate[0], estimate[1]), (estimate[0] + estimate[2], estimate[1] + estimate[3]), color, 1)
         return estimate
 
     def draw_particles(self, image, color = (255,0,0)):

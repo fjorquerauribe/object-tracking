@@ -24,7 +24,7 @@ if __name__ == '__main__':
 
     generator = ImageGenerator(args['images'], args['groundtruth'], args['detections'])
     
-    #cv2.namedWindow('DPP', cv2.WINDOW_NORMAL)
+    cv2.namedWindow('DPP', cv2.WINDOW_NORMAL)
     #cv2.setWindowProperty('DPP', cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
     
     if args['images']:
@@ -55,7 +55,7 @@ if __name__ == '__main__':
                 + str(width) + ',' + str(height) + ',' + str(weights[idx]) \
                 + ',-1,-1,-1,' + ','.join(np.char.mod('%f', features[idx]))
             
-            #cv2.imshow('DPP', img)
-            #cv2.waitKey(1)
+            cv2.imshow('DPP', img)
+            cv2.waitKey(1)
     
     #cv2.destroyWindow('MTT')

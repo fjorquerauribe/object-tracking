@@ -38,6 +38,23 @@ def get_overlap_area(A, B):
         return dx * dy
     return 0.0
 
+def intersection_over_union(A, B):
+    xA = max( A[0], B[0] )
+    yA = max( A[1], B[1] )
+    xB = min( A[0] + A[2], B[0] + B[2] )
+    yB = min( A[1] + A[3], B[1] + B[3] )
+    if ((xB - xA + 1) < 0 or (yB - yA + 1) < 0):
+        intersectionArea = 0
+    else:    
+        intersectionArea = (xB - xA + 1) * (yB - yA + 1)
+    areaA = (A[2] + 1) * (A[3] + 1)
+    areaB = (B[2] + 1) * (B[3] + 1)
+    #print str(A) + ' | ' + str(areaA)
+    #print str(B) + ' | ' + str(areaB)
+    #print intersectionArea
+    iou = max(intersectionArea / float(areaA + areaB - intersectionArea), 0)
+    return iou
+
 def bhatta(hist1, hist2):
     coef = np.sqrt(np.multiply(hist1,hist2)) / np.sqrt(np.sum(hist1) * np.sum(hist2))
     return np.sqrt(1 - np.sum(coef))

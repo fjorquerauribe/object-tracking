@@ -75,7 +75,7 @@ class PHDFilter:
                 idx+=1
             self.persistent_weights = np.ones((self.particles_batch * len(detections)), dtype = float) * ( 1.0/float(self.particles_batch))
 
-            self.tracks_features = self.detector.get_features(img, self.tracks)
+            #self.tracks_features = self.detector.get_features(img, self.tracks)
             #self.birth_model = detections
             self.initialized = True
     
@@ -190,22 +190,23 @@ class PHDFilter:
                     label+=1
 
                 # affinity
-                new_tracks_features = self.detector.get_features(img, new_tracks)
+                '''new_tracks_features = self.detector.get_features(img, new_tracks)
                 affinity_matrix = appearance_affinity(self.tracks_features, new_tracks_features) *\
                                   motion_affinity(self.tracks, new_tracks) * \
                                   shape_affinity(self.tracks, new_tracks)
                 affinity_matrix = 1./affinity_matrix
-                row_ind, col_ind = linear_sum_assignment(affinity_matrix)
+                row_ind, col_ind = linear_sum_assignment(affinity_matrix)'''
+                
                 #######
-                #cost = cost_matrix(self.tracks, new_tracks)
-                #row_ind, col_ind = linear_sum_assignment(cost)
+                cost = cost_matrix(self.tracks, new_tracks)
+                row_ind, col_ind = linear_sum_assignment(cost)
 
                 for r,c in zip(row_ind, col_ind):
                     new_tracks[c].color = self.tracks[r].color
                     new_tracks[c].label = self.tracks[r].label
 
                 self.tracks = new_tracks[:]
-                self.tracks_features = new_tracks_features[:]
+                #self.tracks_features = new_tracks_features[:]
 
                 del self.current_labels[:]
                 for track in self.tracks:
