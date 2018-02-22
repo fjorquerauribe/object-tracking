@@ -1,0 +1,1 @@
+python ../src/test_frcnn.py -i data/$1/$2/ -g data/$1/$2/groundtruth.txt

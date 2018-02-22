@@ -3,17 +3,16 @@ import cv2
 import numpy as np
 import math
 from sklearn.metrics.pairwise import euclidean_distances
-
 from scipy.optimize import linear_sum_assignment
 from scipy.spatial.distance import cosine
 
 class Rectangle:
-     def __init__(self, x_min, y_min, x_max, y_max):
-         self.p_min = (x_min,y_min)
-         self.p_max = (x_max,y_max)
+    def __init__(self, x_min, y_min, x_max, y_max):
+        self.p_min = (x_min,y_min)
+        self.p_max = (x_max,y_max)
 
 class Detection:
-    conf = 0
+    conf = 0.0
     def __init__(self, x_min, y_min, x_max, y_max, conf):
         self.bbox = Rectangle(x_min, y_min, x_max, y_max)
         self.conf = conf
@@ -49,9 +48,6 @@ def intersection_over_union(A, B):
         intersectionArea = (xB - xA + 1) * (yB - yA + 1)
     areaA = (A[2] + 1) * (A[3] + 1)
     areaB = (B[2] + 1) * (B[3] + 1)
-    #print str(A) + ' | ' + str(areaA)
-    #print str(B) + ' | ' + str(areaB)
-    #print intersectionArea
     iou = max(intersectionArea / float(areaA + areaB - intersectionArea), 0)
     return iou
 

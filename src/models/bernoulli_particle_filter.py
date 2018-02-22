@@ -1,20 +1,17 @@
-from utils import utils
-#import scipy.stats as stats
 import numpy as np
 import math
 import cv2
 from sklearn.preprocessing import normalize
 from filterpy.monte_carlo import residual_resample
-
-import warnings
-import sys
+from utils import utils
+from detectors.frcnn import FasterRCNN
 
 class BernoulliParticleFilter:
     DIM = 4 # x,y,width,height
     POS_STD_X = 3.0
     POS_STD_Y = 3.0
-    SCALE_STD_WIDTH = 0.0
-    SCALE_STD_HEIGHT = 0.0
+    SCALE_STD_WIDTH = 3.0
+    SCALE_STD_HEIGHT = 3.0
     THRESHOLD = 100
 
     NEWBORN_PARTICLES = 0
@@ -29,6 +26,7 @@ class BernoulliParticleFilter:
     states = []
     num_particles = 100
     reference = None
+    detector = None
     initialized = False
 
     def __init__(self, num_particles):
@@ -45,12 +43,13 @@ class BernoulliParticleFilter:
         self.initialized = False
 
     def initialize(self, img, groundtruth):
+        self.detector = FasterRCNN()
         self.reference = [groundtruth.p_min[0], groundtruth.p_min[1], \
         groundtruth.p_max[0] - groundtruth.p_min[0], \
         groundtruth.p_max[1] - groundtruth.p_min[1]]
-        (self.img_height, self.img_width, ) = img.shape # if BGR or RGB (height,width,n_channels) else if GRAY (height,width)
+        (self.img_height, self.img_width, _) = img.shape # if BGR or RGB (height,width,n_channels) else if GRAY (height,width)
 
-        # Positive samples
+        # Samples
         self.states[:,0] = self.reference[0] + np.random.normal(0.0, self.POS_STD_X, self.num_particles)
         self.states[:,1] = self.reference[1] + np.random.normal(0.0, self.POS_STD_Y, self.num_particles)
         self.states[:,2] = self.reference[2] + np.random.normal(0.0, self.SCALE_STD_WIDTH, self.num_particles)
@@ -108,14 +107,19 @@ class BernoulliParticleFilter:
                     self.states[idx, 2] = self.reference[2]
                     self.states[idx, 3] = self.reference[3]'''
             self.weights = self.SURVIVAL_PROB * self.existence_prob * self.weights
-            # New born particles
+            
     
-    def update(self, img, detections):
+    def update(self, img, detections = None):
+        if not detections:
+            detections = self.detector.detect(img)
+            for d in detections:
+                cv2.rectangle(img, d.bbox.p_min, d.bbox.p_max, (0,0,255), 2)
+        
         if len(detections) > 0:
             location_weights = np.empty(len(detections), dtype = float)
             for idx, det in enumerate(detections):
                 obs = np.array([det.bbox.p_min[0], det.bbox.p_min[1], det.bbox.p_max[0] - det.bbox.p_min[0], det.bbox.p_max[1]- det.bbox.p_min[1]])
-                location_weights[idx] = math.exp(1.0 * (-1.0 + utils.intersection_over_union(obs, obs)))
+                location_weights[idx] = math.exp(2.0 * (-1.0 + utils.intersection_over_union(self.reference, obs)))
 
             psi = np.empty((len(self.states),len(detections)), dtype = float)
             for i, state in enumerate(self.states):
@@ -126,13 +130,6 @@ class BernoulliParticleFilter:
             
             tau = psi.sum(axis = 0)
             self.weights = self.weights * (1 - self.DETECTION_RATE) + psi.sum(axis = 1)/float(self.LAMBDA_C * self.PDF_C)
-            
-            '''print 'psi:'
-            print psi.transpose()
-            print 'weigths:'
-            print self.weights
-            print len(self.weights)
-            exit()'''
             
             self.resample()
 
