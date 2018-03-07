@@ -3,8 +3,10 @@ import math
 import cv2
 from sklearn.preprocessing import normalize
 from filterpy.monte_carlo import residual_resample
-from utils import utils
-from detectors.frcnn import FasterRCNN
+import utils
+from frcnn import FasterRCNN
+#from utils import utils
+#from detectors.frcnn import FasterRCNN
 
 class BernoulliParticleFilter:
     DIM = 4 # x,y,width,height
@@ -138,7 +140,7 @@ class BernoulliParticleFilter:
         self.states = self.states[residual_resample(self.weights)]
         self.weights = np.ones((self.num_particles), dtype = int) * ( 1/float(self.num_particles))
 
-    def estimate(self, img, color = (255,255, 0), draw = True):
+    def estimate(self, img, color = (255,255, 0), draw = False):
         estimate = np.mean(self.states, axis = 0, dtype = int)
         self.reference = estimate
         if draw:

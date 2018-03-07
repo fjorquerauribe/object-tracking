@@ -1,9 +1,10 @@
 import numpy as np
 import cv2
 import argparse as ap
-from utils import utils
-from models.particle_filter import ParticleFilter
-from utils.image_generator import STTImageGenerator as ImageGenerator
+from context import tracking
+from tracking.utils import utils
+from tracking.models.particle_filter import ParticleFilter
+from tracking.utils.image_generator import STTImageGenerator as ImageGenerator
 
 import time
 

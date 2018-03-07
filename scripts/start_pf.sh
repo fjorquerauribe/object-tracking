@@ -1,1 +1,1 @@
-python ../src/test_pf.py -i data/$1/$2/ -g data/$1/$2/groundtruth.txt -npart $3
+python ../tests/test_pf.py -i data/$1/$2/ -g data/$1/$2/groundtruth.txt -npart $3

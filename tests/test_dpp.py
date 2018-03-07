@@ -1,9 +1,9 @@
 import numpy as np
 import cv2
 import argparse as ap
-
-from utils.image_generator import MTTImageGenerator as ImageGenerator
-from dpp.dpp import DPP
+from context import tracking
+from tracking.utils.image_generator import MTTImageGenerator as ImageGenerator
+from tracking.dpp.dpp import DPP
 
 if __name__ == '__main__':
     parser = ap.ArgumentParser()

@@ -3,8 +3,7 @@ import os
 import cv2
 import mxnet as mx
 import numpy as np
-from utils.utils import Rectangle, Detection
-
+from utils import Rectangle, Detection
 from rcnn.logger import logger
 from rcnn.config import config
 from rcnn.symbol import get_vgg_test, get_vgg_rpn_test
@@ -34,8 +33,7 @@ nms = py_nms_wrapper(NMS_THRESH)
 
 class FasterRCNN:
     predictor = None
-    
-    def __init__(self, gpu = 0, prefix = '../data/final', epoch = 0):
+    def __init__(self, gpu = 0, prefix = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'data', 'final')), epoch = 0):
         ctx = mx.gpu(gpu)
         symbol = get_vgg_test(num_classes = config.NUM_CLASSES, num_anchors = config.NUM_ANCHORS)
         self.predictor = self.get_net(symbol, prefix, epoch, ctx)

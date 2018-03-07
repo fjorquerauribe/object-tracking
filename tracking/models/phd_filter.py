@@ -1,4 +1,4 @@
-from utils.utils import Target, Rectangle, cost_matrix, appearance_affinity, motion_affinity, shape_affinity
+from utils import Target, Rectangle, cost_matrix, appearance_affinity, motion_affinity, shape_affinity
 import scipy.stats as stats
 from scipy.optimize import linear_sum_assignment
 import random
@@ -8,7 +8,7 @@ import cv2
 from sklearn.preprocessing import normalize
 from sklearn.cluster import KMeans
 
-from detectors.resnet import Resnet
+from resnet import Resnet
 
 class PHDFilter:
     DIM = 4

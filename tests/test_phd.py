@@ -1,9 +1,9 @@
 import numpy as np
 import cv2
 import argparse as ap
-
-from utils.image_generator import MTTImageGenerator as ImageGenerator
-from models.phd_filter import PHDFilter
+from context import tracking
+from tracking.utils.image_generator import MTTImageGenerator as ImageGenerator
+from tracking.models.phd_filter import PHDFilter
 
 if __name__ == '__main__':
     parser = ap.ArgumentParser()
@@ -29,9 +29,8 @@ if __name__ == '__main__':
             gt = generator.get_groundtruth(i)
             detections = generator.get_detections(i)
 
-            print detections
             for det in detections:
-                cv2.rectangle(img, det.bbox, (0, 255, 0), 2)
+                cv2.rectangle(img, det.bbox.p_min, det.bbox.p_max, (0, 255, 0), 2)
             
             if verbose:
                 print '-------------------------------------'

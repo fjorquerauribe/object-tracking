@@ -1,5 +1,5 @@
 import numpy as np
-from utils.utils import get_overlap_area, get_overlap_ratio
+from utils import get_overlap_area, get_overlap_ratio
 
 class DPP:
     alpha = 0.9

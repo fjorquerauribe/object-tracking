@@ -1,17 +1,16 @@
 #!/usr/bin/python
 
-from vot import vot
-import sys
 import time
+from context import tracking
+from tracking.vot import vot
+from tracking.models.particle_filter import ParticleFilter
+from tracking.utils.utils import Rectangle
 
-from models.bernoulli_particle_filter import BernoulliParticleFilter
-from utils.utils import Rectangle
-
-class BPFTracker:
+class PFTracker:
     pf = None
     def __init__(self, image, region):
         initRegion = Rectangle(region.x, region.y, region.x + region.width, region.y + region.height)
-        self.pf = BernoulliParticleFilter(100)
+        self.pf = ParticleFilter(100)
         self.pf.initialize(image, initRegion)
 
     def track(self, image):
@@ -34,7 +33,7 @@ if not imagefile:
     sys.exit(0)
 
 image = cv2.imread(imagefile)
-tracker = BPFTracker(image, region)
+tracker = PFTracker(image, region)
 
 while True:
     # *****************************************

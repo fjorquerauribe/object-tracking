@@ -1,11 +1,12 @@
 import numpy as np
 import cv2
 import argparse as ap
-from utils import utils
-from models.bernoulli_particle_filter import BernoulliParticleFilter
-from utils.image_generator import STTImageGenerator as ImageGenerator
 
-from detectors.frcnn import FasterRCNN
+from context import tracking
+from tracking.utils import utils
+from tracking.models.bernoulli_particle_filter import BernoulliParticleFilter
+from tracking.utils.image_generator import STTImageGenerator as ImageGenerator
+from tracking.detectors.frcnn import FasterRCNN
 
 if __name__ == '__main__':
     parser = ap.ArgumentParser()
@@ -21,7 +22,7 @@ if __name__ == '__main__':
     generator = ImageGenerator(args['images'], args['groundtruth'], args['detections'])
 
     cv2.namedWindow('Bernoulli Particle Filter', cv2.WINDOW_NORMAL)
-
+    
     if args['images']:
         pf = BernoulliParticleFilter(int(args['num_particles']))
         for i in xrange(generator.get_sequences_len()):

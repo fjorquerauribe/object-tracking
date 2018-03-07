@@ -1,4 +1,4 @@
-from utils import utils
+import utils
 import scipy.stats as stats
 import numpy as np
 import math
