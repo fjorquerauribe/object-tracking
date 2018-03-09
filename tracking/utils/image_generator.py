@@ -89,10 +89,19 @@ class MTTImageGenerator():
     det_weights = {}
     features = {}
     FEATURES_DIM = 0
-    def __init__(self, path_to_images='', path_to_groundtruth='', path_to_det=''):
-        self.read_images(path_to_images)
-        self.read_groundtruth(path_to_groundtruth)
-        self.read_detections(path_to_det)
+    def __init__(self, path_to_images = None, path_to_groundtruth = None, path_to_det = None):
+        if path_to_images is None:
+            print 'No images path given ...'
+            exit()
+        else:
+            self.read_images(path_to_images)
+        if path_to_groundtruth is None:
+            print 'No groundtruth path given ...'
+            exit()
+        else:
+            self.read_groundtruth(path_to_groundtruth)
+        if path_to_det is not None:
+            self.read_detections(path_to_det)
     
     def read_images(self, path_to_images = ''):
         if path_to_images == '':

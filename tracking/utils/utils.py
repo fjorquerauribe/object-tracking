@@ -18,10 +18,13 @@ class Detection:
         self.conf = conf
 
 class Target:
-    def __init__(self, bbox, label, color = None):
+    def __init__(self, bbox, label, color = None, conf = None, survival_rate = None, feature = None):
         self.bbox = bbox
         self.color = color
         self.label = label
+        self.conf = conf
+        self.survival_rate = survival_rate
+        self.feature = feature
 
 def get_overlap_ratio(A, B):
     dx = min(A[0] + A[2], B[0] + B[2]) - max(A[0], B[0])

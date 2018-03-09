@@ -5,8 +5,6 @@ from sklearn.preprocessing import normalize
 from filterpy.monte_carlo import residual_resample
 import utils
 from frcnn import FasterRCNN
-#from utils import utils
-#from detectors.frcnn import FasterRCNN
 
 class BernoulliParticleFilter:
     DIM = 4 # x,y,width,height
@@ -132,7 +130,6 @@ class BernoulliParticleFilter:
             
             tau = psi.sum(axis = 0)
             self.weights = self.weights * (1 - self.DETECTION_RATE) + psi.sum(axis = 1)/float(self.LAMBDA_C * self.PDF_C)
-            
             self.resample()
 
     def resample(self):
