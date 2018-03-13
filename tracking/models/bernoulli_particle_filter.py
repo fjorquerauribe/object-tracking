@@ -133,7 +133,7 @@ class BernoulliParticleFilter:
             self.resample()
 
     def resample(self):
-        self.weights = normalize(self.weights[:,np.newaxis], axis = 0, norm='l1').ravel()
+        self.weights = normalize(self.weights[:,np.newaxis], axis = 0, norm = 'l1').ravel()
         self.states = self.states[residual_resample(self.weights)]
         self.weights = np.ones((self.num_particles), dtype = int) * ( 1/float(self.num_particles))
 
@@ -144,6 +144,6 @@ class BernoulliParticleFilter:
             cv2.rectangle(img, (estimate[0], estimate[1]), (estimate[0] + estimate[2], estimate[1] + estimate[3]), color, 1)
         return estimate
 
-    def draw_particles(self, img, color = (255,0,0)):
+    def draw_particles(self, img, color = (255, 0, 0)):
         for state in self.states:
             cv2.rectangle(img, (state[0], state[1]), (state[0] + state[2], state[1] + state[3]), color, 1)

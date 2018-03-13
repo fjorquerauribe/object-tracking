@@ -17,8 +17,8 @@ if __name__ == '__main__':
     cv2.namedWindow('MTT', cv2.WINDOW_NORMAL)
     
     if args['images']:
-        filter = GMPHDFilter(False)
         verbose = False
+        filter = GMPHDFilter(verbose)
         idx = 1
         for i in xrange(generator.get_sequences_len()):
             img = generator.get_frame(i)
@@ -31,13 +31,13 @@ if __name__ == '__main__':
             estimates = []
             if not filter.is_initialized():
                 filter.initialize(img)
-                #estimates = filter.estimate(img, draw = False, verbose = verbose)
+                estimates = filter.estimate(img, draw = True)
                 #filter.draw_particles(img)
             else:
-                filter.initialize(img)
-                #filter.predict(verbose = verbose)
-                #filter.update(img, detections, verbose = verbose)
-                #estimates = filter.estimate(img, draw = False, verbose = verbose)
+                #filter.initialize(img)
+                filter.predict()
+                filter.update(img, verbose = verbose)
+                estimates = filter.estimate(img, draw = True)
                 #filter.draw_particles(img)
             
             '''

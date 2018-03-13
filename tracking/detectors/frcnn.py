@@ -33,7 +33,6 @@ NMS_THRESH = 0.3
 nms = py_nms_wrapper(NMS_THRESH)
 
 class FasterRCNN:
-    predictor = None
     def __init__(self, gpu = 0, prefix = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'data', 'final')), epoch = 0):
         ctx = mx.gpu(gpu)
         symbol = get_vgg_test(num_classes = config.NUM_CLASSES, num_anchors = config.NUM_ANCHORS)
@@ -107,11 +106,11 @@ class FasterRCNN:
         for ind, boxes in enumerate(boxes_this_image):
             if len(boxes) > 0:
                 for box in boxes:
-                    x1 = box[0] 
-                    y1 = box[1] 
-                    x2 = box[2] 
-                    y2 = box[3] 
-                    score = box[4]
+                    x1 = int(round(box[0])) 
+                    y1 = int(round(box[1]))
+                    x2 = int(round(box[2]))
+                    y2 = int(round(box[3]))
+                    score = int(round(box[4]))
                     new_det = Detection(x1, y1, x2, y2, score)
                     detections.append(new_det)
                     if verbose:

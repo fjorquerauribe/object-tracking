@@ -18,7 +18,7 @@ class Detection:
         self.conf = conf
 
 class Target:
-    def __init__(self, bbox, label, color = None, conf = None, survival_rate = None, feature = None):
+    def __init__(self, bbox = None, label = None, color = None, conf = None, survival_rate = None, feature = None):
         self.bbox = bbox
         self.color = color
         self.label = label
