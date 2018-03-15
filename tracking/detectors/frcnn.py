@@ -28,8 +28,8 @@ LABEL_NAMES = None
 DATA_SHAPES = [('data', (1, 3, LONG_SIDE, SHORT_SIDE)), ('im_info', (1, 3))]
 LABEL_SHAPES = None
 # visualization
-CONF_THRESH = 0.5
-NMS_THRESH = 0.3
+CONF_THRESH = 0.5 #0.5
+NMS_THRESH = 0.3 #0.3
 nms = py_nms_wrapper(NMS_THRESH)
 
 class FasterRCNN:
@@ -90,9 +90,10 @@ class FasterRCNN:
         """
         data_batch, data_names, im_scale = self.generate_batch(im)
         scores, boxes, data_dict = im_detect(self.predictor, data_batch, data_names, im_scale)
-        all_boxes = [[] for _ in CLASSES]
         
+        all_boxes = [[] for _ in CLASSES]
         for cls in CLASSES:
+            #if cls == 'person':
             cls_ind = CLASSES.index(cls)
             cls_boxes = boxes[:, 4 * cls_ind:4 * (cls_ind + 1)]
             cls_scores = scores[:, cls_ind, np.newaxis]

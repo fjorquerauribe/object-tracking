@@ -53,7 +53,7 @@ class PHDFilter:
         
     def initialize(self, img, detections):
         if len(detections) > 0:
-            self.detector = Resnet()
+            #self.detector = Resnet()
             (self.img_height, self.img_width, self.n_channels) = img.shape
             dPosX = stats.norm( loc = 0.0, scale = self.POS_STD_X )
             dPosY = stats.norm( loc = 0.0, scale = self.POS_STD_Y )

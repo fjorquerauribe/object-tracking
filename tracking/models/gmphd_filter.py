@@ -1,5 +1,6 @@
-from utils import Target, Rectangle
+from utils import Target, Rectangle, cost_matrix
 from frcnn import FasterRCNN
+from resnet import Resnet
 import scipy.stats as stats
 from scipy.optimize import linear_sum_assignment
 import random
@@ -28,6 +29,7 @@ class GMPHDFilter:
         self.labels = []
         self.birth_model = []
         self.detector = FasterRCNN()
+        self.resnet = Resnet()
 
     def is_initialized(self):
         return self.initialized
@@ -42,8 +44,9 @@ class GMPHDFilter:
         if len(detections) > 0:
             for det in detections:
                 cv2.rectangle(img, det.bbox.p_min, det.bbox.p_max, (0, 255, 0), 2)
-            
+            features = self.resnet.get_features(img, detections)
             for idx, det in enumerate(detections):
+                '''
                 # falta feature, hist es solo temporal
                 x1 = int(det.bbox.p_min[0])
                 y1 = int(det.bbox.p_min[1])
@@ -52,7 +55,8 @@ class GMPHDFilter:
                 crop_img = img[x1:x2, y1:y2]
                 hist = cv2.calcHist( [ crop_img ], [0], None, [256], [0,256])
                 #############################
-                target = Target(det.bbox, idx, (random.randint(0,255), random.randint(0,255), random.randint(0,255)), det.conf, self.SURVIVAL_RATE, hist)
+                '''
+                target = Target(det.bbox, idx, (random.randint(0,255), random.randint(0,255), random.randint(0,255)), det.conf, self.SURVIVAL_RATE, features[idx,:])
                 self.tracks.append(target)
                 self.labels.append(idx)
             self.initialized = True
@@ -85,11 +89,26 @@ class GMPHDFilter:
     def update(self, img, verbose = False):
         detections = self.detector.detect(img)
         if self.is_initialized() and len(detections) > 0:
+            features = self.resnet.get_features(img, detections)
             new_detections = []
-            for det in detections:
+            for idx, det in enumerate(detections):
+                '''
+                # falta feature, hist es solo temporal
+                x1 = int(det.bbox.p_min[0])
+                y1 = int(det.bbox.p_min[1])
+                x2 = int(det.bbox.p_max[0])
+                y2 = int(det.bbox.p_max[1])
+                crop_img = img[x1:x2, y1:y2]
+                hist = cv2.calcHist( [ crop_img ], [0], None, [256], [0,256])
+                #############################
+                '''
                 target = Target(bbox = det.bbox, color = (random.randint(0,255), random.randint(0,255), random.randint(0,255)),\
-                 conf = det.conf, survival_rate = self.SURVIVAL_RATE)
+                 conf = det.conf, survival_rate = self.SURVIVAL_RATE, feature = features[idx,:])
                 new_detections.append(target)
+            
+            diagonal = np.sqrt( np.power(self.img_height, 2) + np.power(self.img_width, 2) )
+            area = self.img_height * self.img_width
+            cost_matrix(self.tracks, new_detections, diagonal, area, True)
             self.tracks = new_detections
 
 
@@ -97,7 +116,7 @@ class GMPHDFilter:
         if self.initialized:
             if draw:
                 for track in self.tracks:
-                    cv2.rectangle(img, track.bbox.p_min, track.bbox.p_max, track.color, 2)
+                    cv2.rectangle(img, track.bbox.p_min, track.bbox.p_max, track.color, 3)
             if self.verbose:
                 print 'estimated targets: ' + str(len(self.tracks))
             return self.tracks

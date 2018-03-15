@@ -58,7 +58,7 @@ def bhatta(hist1, hist2):
     coef = np.sqrt(np.multiply(hist1,hist2)) / np.sqrt(np.sum(hist1) * np.sum(hist2))
     return np.sqrt(1 - np.sum(coef))
 
-def cost_matrix(tracks, new_tracks):
+def cost_matrix(tracks, new_tracks, diagonal = 1.0, area = 1.0, norm = False):
     tracks_centroids = np.empty((0, 2), dtype = float)
     for t in tracks:
         tracks_centroids = np.append(tracks_centroids, [[ (t.bbox.p_max[0] + t.bbox.p_min[0])/2, (t.bbox.p_max[1] + t.bbox.p_min[1])/2 ]], axis = 0)
@@ -68,6 +68,17 @@ def cost_matrix(tracks, new_tracks):
         new_tracks_centroids = np.append(new_tracks_centroids, [[ (t.bbox.p_max[0] + t.bbox.p_min[0])/2, (t.bbox.p_max[1] + t.bbox.p_min[1])/2 ]], axis = 0)
     
     cost = euclidean_distances(tracks_centroids, new_tracks_centroids)
+    
+    if norm:
+        feature_cost = np.zeros((len(tracks), len(new_tracks)), dtype = float)
+        for idx1, t in enumerate(tracks):
+            for idx2, nt in enumerate(new_tracks):
+                feature_cost[idx1, idx2] = ((t.feature - nt.feature)**2).sum()
+
+        position_cost = 1.0 + cost/diagonal
+        scale_cost = 1.0 + cost/area
+        cost = feature_cost * position_cost * scale_cost
+    
     return cost
 
 def appearance_affinity(feat1, feat2):

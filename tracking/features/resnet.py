@@ -1,6 +1,7 @@
 import mxnet as mx
 import numpy as np
 import cv2
+import os
 
 from collections import namedtuple
 Batch = namedtuple('Batch', ['data'])
@@ -11,8 +12,8 @@ class Resnet:
     aux_params = None
     DIM = 2048
 
-    def __init__(self):
-        self.sym, self.arg_params, self.aux_params = mx.model.load_checkpoint('../data/resnet-152', 0)
+    def __init__(self, model_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'data', 'resnet-152'))):
+        self.sym, self.arg_params, self.aux_params = mx.model.load_checkpoint(model_path, 0)
         mod = mx.mod.Module(symbol = self.sym, context = mx.gpu(), label_names = None)
         mod.bind(for_training = False, data_shapes = [('data', (1,3,224,224))], 
          label_shapes = mod._label_shapes)
@@ -35,7 +36,6 @@ class Resnet:
     def get_features(self, img, boxes):
         all_layers = self.sym.get_internals()
         all_layers.list_outputs()[-10:]
-
         fe_sym = all_layers['flatten0_output']
         fe_mod = mx.mod.Module(symbol = fe_sym, context = mx.gpu(), label_names = None)
         fe_mod.bind(for_training = False, data_shapes = [('data', (1,3,224,224))])
@@ -45,8 +45,8 @@ class Resnet:
         for i in xrange(len(boxes)):
             subimage = self.get_subimage(img, boxes[i])
             fe_mod.forward(Batch([mx.nd.array(subimage)]))
-            features[i,:] = fe_mod.get_outputs()[0].asnumpy()
+            features[i,:] = fe_mod.get_outputs()[0].asnumpy()    
         return features
-
+        
 if __name__ == '__main__':
     detecton = Resnet()

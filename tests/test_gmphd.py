@@ -34,7 +34,6 @@ if __name__ == '__main__':
                 estimates = filter.estimate(img, draw = True)
                 #filter.draw_particles(img)
             else:
-                #filter.initialize(img)
                 filter.predict()
                 filter.update(img, verbose = verbose)
                 estimates = filter.estimate(img, draw = True)

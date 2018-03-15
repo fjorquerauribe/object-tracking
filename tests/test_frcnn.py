@@ -19,14 +19,14 @@ if __name__ == '__main__':
     cv2.namedWindow('Faster R-CNN', cv2.WINDOW_NORMAL)
 
     if args['images']:
-        print generator.get_sequences_len()
+        #print generator.get_sequences_len()
         for i in xrange(generator.get_sequences_len()):
             img = generator.get_frame(i)
             gt = generator.get_groundtruth(i)
             detections = detector.detect(img)
-
+            #print len(detections)
             for d in detections:
-                cv2.rectangle(img, d.bbox.p_min, d.bbox.p_max, (0,0,255), 2)
+                cv2.rectangle(img, d.bbox.p_min, d.bbox.p_max, (0,0,255), 3)
             
             cv2.imshow('Faster R-CNN', img)
             cv2.waitKey(1)
