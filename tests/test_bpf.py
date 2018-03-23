@@ -34,7 +34,7 @@ if __name__ == '__main__':
             else:
                 pf.predict()
                 pf.update(img)
-                pf.estimate(img, False)
+                pf.estimate(img, draw = True)
 
             cv2.rectangle(img, gt.p_min, gt.p_max, (0,255,0), 2)
             cv2.imshow('Bernoulli Particle Filter', img)

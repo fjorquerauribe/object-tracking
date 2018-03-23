@@ -141,7 +141,7 @@ class BernoulliParticleFilter:
         estimate = np.mean(self.states, axis = 0, dtype = int)
         self.reference = estimate
         if draw:
-            cv2.rectangle(img, (estimate[0], estimate[1]), (estimate[0] + estimate[2], estimate[1] + estimate[3]), color, 1)
+            cv2.rectangle(img, (estimate[0], estimate[1]), (estimate[0] + estimate[2], estimate[1] + estimate[3]), color, 3)
         return estimate
 
     def draw_particles(self, img, color = (255, 0, 0)):
