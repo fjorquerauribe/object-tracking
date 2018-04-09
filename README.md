@@ -10,6 +10,11 @@ These instructions will get you a copy of the project up and running on your loc
 
 - OpenCV 3.3
 - MXNet (https://github.com/apache/incubator-mxnet)
+- Scikit-learn
+
+## Installation
+
+Install rcnn example (https://github.com/apache/incubator-mxnet/tree/master/example/rcnn)
 
 ## Running the test
 
