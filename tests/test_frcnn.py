@@ -24,7 +24,9 @@ if __name__ == '__main__':
             img = generator.get_frame(i)
             gt = generator.get_groundtruth(i)
             detections = detector.detect(img)
-            #print len(detections)
+
+            #detections = utils.nms(detections, 0.7, 0, 0.5)
+
             for d in detections:
                 cv2.rectangle(img, d.bbox.p_min, d.bbox.p_max, (0,0,255), 3)
             

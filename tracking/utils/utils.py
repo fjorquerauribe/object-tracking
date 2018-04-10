@@ -13,7 +13,7 @@ class Rectangle:
 
 class Detection:
     conf = 0.0
-    def __init__(self, x_min, y_min, x_max, y_max, conf):
+    def __init__(self, x_min, y_min, x_max, y_max, conf = None):
         self.bbox = Rectangle(x_min, y_min, x_max, y_max)
         self.conf = conf
 
@@ -70,14 +70,25 @@ def cost_matrix(tracks, new_tracks, diagonal = 1.0, area = 1.0, norm = False):
     cost = euclidean_distances(tracks_centroids, new_tracks_centroids)
     
     if norm:
+        #print cost
+        #print '-------------------------------'
+        
         feature_cost = np.zeros((len(tracks), len(new_tracks)), dtype = float)
         for idx1, t in enumerate(tracks):
             for idx2, nt in enumerate(new_tracks):
-                feature_cost[idx1, idx2] = ((t.feature - nt.feature)**2).sum()
+                #feature_cost[idx1, idx2] = ((t.feature - nt.feature)**2).sum()
+                feature_cost[idx1, idx2] = cv2.compareHist(t.feature, nt.feature, cv2.HISTCMP_CORREL)
 
         position_cost = 1.0 + cost/diagonal
         scale_cost = 1.0 + cost/area
+        
         cost = feature_cost * position_cost * scale_cost
+        print cost
+        cost = position_cost * scale_cost
+        #print (feature_cost - feature_cost.min())/ (feature_cost.max() - feature_cost.min())
+        #print '-----------------------------'
+        #print cost
+        #exit()
     
     return cost
 
@@ -113,3 +124,38 @@ def shape_affinity(tracks1, tracks2, w = 0.1):
             ( ( float(np.absolute(h_track1 - h_track2))/(h_track1 + h_track2) )\
             + ( float(np.absolute(w_track1 - w_track2))/(w_track1 + w_track2) ) ))
     return shape_affinity_matrix
+
+def nms(boxes, thresh, neighbors = 0, minScoresSum = 0.0):
+    resRects = []
+    idxs = []
+    for idx, box in enumerate(boxes):
+        idxs.append([box.conf, idx])
+    idxs.sort()
+    
+    while len(idxs) > 0:
+        lastElem = idxs.pop()
+        rect1 = boxes[lastElem[1]].bbox
+        x1 = rect1.p_min[0]
+        y1 = rect1.p_min[1]
+        w1 = rect1.p_max[0] - rect1.p_min[0]
+        h1 = rect1.p_max[1] - rect1.p_min[1]
+        
+        neighborsCount = 0
+        scoresSum = lastElem[0]
+
+        for idx in idxs:
+            rect2 = boxes[idx[1]].bbox
+            x2 = rect2.p_min[0]
+            y2 = rect2.p_min[1]
+            w2 = rect2.p_max[0] - rect2.p_min[0]
+            h2 = rect2.p_max[1] - rect2.p_min[1]
+
+            iou = intersection_over_union([x1,y1,w1,h1], [x2,y2,w2,h2])
+            if iou > thresh:
+                scoresSum+= idx[0]
+                idxs.remove(idx)
+                neighborsCount+=1
+        if neighborsCount >= neighbors and scoresSum >= minScoresSum:
+            resRects.append(boxes[lastElem[1]])
+    
+    return resRects

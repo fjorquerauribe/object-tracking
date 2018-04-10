@@ -88,7 +88,7 @@ class MTTImageGenerator():
     detections = {}
     det_weights = {}
     features = {}
-    FEATURES_DIM = 0
+    FEATURES_DIM = 128
     def __init__(self, path_to_images = None, path_to_groundtruth = None, path_to_det = None):
         if path_to_images is None:
             print 'No images path given ...'
@@ -121,7 +121,7 @@ class MTTImageGenerator():
             for line in f:
                 line = line.split(',')
                 line[-1] = line[-1].strip()
-                num_frame = int(line[0])
+                num_frame = int(float(line[0]))
                 if num_frame - 1 not in self.detections:
                     self.detections[num_frame - 1] = []
                     self.features[num_frame - 1] = np.empty((0, self.FEATURES_DIM))

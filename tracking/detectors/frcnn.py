@@ -27,8 +27,8 @@ DATA_NAMES = ['data', 'im_info']
 LABEL_NAMES = None
 DATA_SHAPES = [('data', (1, 3, LONG_SIDE, SHORT_SIDE)), ('im_info', (1, 3))]
 LABEL_SHAPES = None
-# visualization
-CONF_THRESH = 0.5 #0.5
+
+CONF_THRESH = 0.7 #0.7
 NMS_THRESH = 0.3 #0.3
 nms = py_nms_wrapper(NMS_THRESH)
 
