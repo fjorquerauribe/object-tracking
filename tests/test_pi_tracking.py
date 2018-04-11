@@ -80,8 +80,10 @@ if __name__ == '__main__':
 
         if not outputQueue.empty():
             detections = outputQueue.get()
+            print detections.shape
 
         if detections is not None:
+            box_detections = []
             for i in np.arange(0, detections.shape[2]):
                 confidence = detections[0, 0, i, 2]
 
@@ -102,16 +104,16 @@ if __name__ == '__main__':
                 cv2.putText(frame, label, (startX, y),
                     cv2.FONT_HERSHEY_SIMPLEX, 0.5, COLORS[idx], 2)
                 '''
-                box_detections = []
-                for det in detections:
-                    box_detections.append(Detection(max(0,startX), max(0,startY), min(frame_width,endX), min(frame_height,endY), confidence))
-                if not filter.is_initialized():
-                    filter.initialize(frame, box_detections)
-                    estimates = filter.estimate(frame, draw = draw)
-                else:
-                    filter.predict()
-                    filter.update(frame, box_detections, verbose = verbose)
-                    estimates = filter.estimate(frame, draw = draw)
+                
+                box_detections.append(Detection(max(0,startX), max(0,startY), min(frame_width,endX), min(frame_height,endY), confidence))
+                
+            if not filter.is_initialized():
+                filter.initialize(frame, box_detections)
+                estimates = filter.estimate(frame, draw = draw)
+            else:
+                filter.predict()
+                filter.update(frame, box_detections, verbose = verbose)
+                estimates = filter.estimate(frame, draw = draw)
                 
         cv2.imshow("Frame", frame)
         key = cv2.waitKey(1) & 0xFF
