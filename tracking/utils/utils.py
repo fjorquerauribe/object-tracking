@@ -67,8 +67,8 @@ def cost_matrix(tracks, new_tracks, diagonal = 1.0, area = 1.0, norm = False):
     for t in new_tracks:
         new_tracks_centroids = np.append(new_tracks_centroids, [[ (t.bbox.p_max[0] + t.bbox.p_min[0])/2, (t.bbox.p_max[1] + t.bbox.p_min[1])/2 ]], axis = 0)
     
-    print tracks_centroids
-    print new_tracks_centroids
+    #print tracks_centroids
+    #print new_tracks_centroids
     cost = euclidean_distances(tracks_centroids, new_tracks_centroids)
     
     if norm:

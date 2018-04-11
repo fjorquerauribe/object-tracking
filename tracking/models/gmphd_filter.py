@@ -97,7 +97,6 @@ class GMPHDFilter:
                 x2 = int(det.bbox.p_max[0])
                 y2 = int(det.bbox.p_max[1])
                 crop_img = img[y1:y2, x1:x2]
-                print 'x1: ' + str(x1) + ' | y1: ' + str(y1) + ' | x2: ' + str(x2) + ' | y2: ' + str(y2)
                 crop_img = cv2.resize(crop_img, (50,50))
                 hist = cv2.calcHist( [ crop_img ], [0, 1, 2], None, [8, 8, 8], [0, 256, 0, 256, 0, 256]).flatten()
                 

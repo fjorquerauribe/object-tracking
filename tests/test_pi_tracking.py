@@ -64,7 +64,7 @@ if __name__ == '__main__':
     p.start()
 
     print("[INFO] starting video stream...")
-    vs = VideoStream(src=1).start()
+    vs = VideoStream(src=0).start()
     # vs = VideoStream(usePiCamera=True).start()
     time.sleep(2.0)
     fps = FPS().start()
@@ -102,7 +102,6 @@ if __name__ == '__main__':
                 cv2.putText(frame, label, (startX, y),
                     cv2.FONT_HERSHEY_SIMPLEX, 0.5, COLORS[idx], 2)
                 '''
-                print detections
                 box_detections = []
                 for det in detections:
                     box_detections.append(Detection(max(0,startX), max(0,startY), min(frame_width,endX), min(frame_height,endY), confidence))
