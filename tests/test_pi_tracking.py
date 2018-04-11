@@ -15,6 +15,7 @@ import cv2
 
 from context import tracking
 from tracking.models.gmphd_filter import GMPHDFilter
+from tracking.utils.utils import Detection
 
 def classify_frame(net, inputQueue, outputQueue):
 	while True:
@@ -48,6 +49,10 @@ if __name__ == '__main__':
     print("[INFO] loading model...")
     net = cv2.dnn.readNetFromCaffe(args["prototxt"], args["model"])
 
+    verbose = False
+    draw = True
+    filter = GMPHDFilter(verbose)
+
     inputQueue = Queue(maxsize=1)
     outputQueue = Queue(maxsize=1)
     detections = None
@@ -67,6 +72,7 @@ if __name__ == '__main__':
     while True:
         frame = vs.read()
         frame = imutils.resize(frame, width=400)
+        (frame_height, frame_width, n_channels) = frame.shape
         (fH, fW) = frame.shape[:2]
 
         if inputQueue.empty():
@@ -87,6 +93,7 @@ if __name__ == '__main__':
                 box = detections[0, 0, i, 3:7] * dims
                 (startX, startY, endX, endY) = box.astype("int")
 
+                '''
                 label = "{}: {:.2f}%".format(CLASSES[idx],
                     confidence * 100)
                 cv2.rectangle(frame, (startX, startY), (endX, endY),
@@ -94,7 +101,19 @@ if __name__ == '__main__':
                 y = startY - 15 if startY - 15 > 15 else startY + 15
                 cv2.putText(frame, label, (startX, y),
                     cv2.FONT_HERSHEY_SIMPLEX, 0.5, COLORS[idx], 2)
-
+                '''
+                print detections
+                box_detections = []
+                for det in detections:
+                    box_detections.append(Detection(max(0,startX), max(0,startY), min(frame_width,endX), min(frame_height,endY), confidence))
+                if not filter.is_initialized():
+                    filter.initialize(frame, box_detections)
+                    estimates = filter.estimate(frame, draw = draw)
+                else:
+                    filter.predict()
+                    filter.update(frame, box_detections, verbose = verbose)
+                    estimates = filter.estimate(frame, draw = draw)
+                
         cv2.imshow("Frame", frame)
         key = cv2.waitKey(1) & 0xFF
 

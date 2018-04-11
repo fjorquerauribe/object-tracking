@@ -97,6 +97,7 @@ class GMPHDFilter:
                 x2 = int(det.bbox.p_max[0])
                 y2 = int(det.bbox.p_max[1])
                 crop_img = img[y1:y2, x1:x2]
+                print 'x1: ' + str(x1) + ' | y1: ' + str(y1) + ' | x2: ' + str(x2) + ' | y2: ' + str(y2)
                 crop_img = cv2.resize(crop_img, (50,50))
                 hist = cv2.calcHist( [ crop_img ], [0, 1, 2], None, [8, 8, 8], [0, 256, 0, 256, 0, 256]).flatten()
                 
@@ -108,34 +109,42 @@ class GMPHDFilter:
                 # conf = det.conf, survival_rate = self.SURVIVAL_RATE, feature = features[idx,:])
                 new_detections.append(target)
             
-            diagonal = np.sqrt( np.power(self.img_height, 2) + np.power(self.img_width, 2) )
-            area = self.img_height * self.img_width
-            cost = cost_matrix(self.tracks, new_detections, diagonal, area, True)
-
-            tracks_ind, new_dets_ind = linear_sum_assignment(cost)
-            
             new_tracks = []
-            for idxTrack, idxNewDet in zip(tracks_ind, new_dets_ind):
-                if cost[idxTrack, idxNewDet] < self.THRESHOLD:
-                    new_detections[idxNewDet].label = self.tracks[idxTrack].label
-                    new_detections[idxNewDet].color = self.tracks[idxTrack].color
-                    new_tracks.append(new_detections[idxNewDet])
-                else:
+            if len(self.tracks) > 0:
+                diagonal = np.sqrt( np.power(self.img_height, 2) + np.power(self.img_width, 2) )
+                area = self.img_height * self.img_width
+                cost = cost_matrix(self.tracks, new_detections, diagonal, area, True)
+
+                tracks_ind, new_dets_ind = linear_sum_assignment(cost)
+                
+                for idxTrack, idxNewDet in zip(tracks_ind, new_dets_ind):
+                    if cost[idxTrack, idxNewDet] < self.THRESHOLD:
+                        new_detections[idxNewDet].label = self.tracks[idxTrack].label
+                        new_detections[idxNewDet].color = self.tracks[idxTrack].color
+                        new_tracks.append(new_detections[idxNewDet])
+                    else:
+                        self.tracks[idxTrack].survival_rate = np.exp(self.SURVIVAL_DECAY * (-1.0 + self.tracks[idxTrack].survival_rate * 0.9))
+                        new_tracks.append(self.tracks[idxTrack])
+                
+                tracks_no_selected = set(np.arange(len(self.tracks))) - set(tracks_ind)
+                for idxTrack in tracks_no_selected:
                     self.tracks[idxTrack].survival_rate = np.exp(self.SURVIVAL_DECAY * (-1.0 + self.tracks[idxTrack].survival_rate * 0.9))
                     new_tracks.append(self.tracks[idxTrack])
-            
-            tracks_no_selected = set(np.arange(len(self.tracks))) - set(tracks_ind)
-            for idxTrack in tracks_no_selected:
-                self.tracks[idxTrack].survival_rate = np.exp(self.SURVIVAL_DECAY * (-1.0 + self.tracks[idxTrack].survival_rate * 0.9))
-                new_tracks.append(self.tracks[idxTrack])
-            
-            new_detections_no_selected = set(np.arange(len(new_detections))) - set(new_dets_ind)
-            for idxNewDet in new_detections_no_selected:
-                if np.random.uniform() > self.BIRTH_RATE:
-                    new_label = max(self.labels) + 1
-                    new_detections[idxNewDet].label = new_label
-                    self.birth_model.append(new_detections[idxNewDet])
-                    self.labels.append(new_label)
+                
+                new_detections_no_selected = set(np.arange(len(new_detections))) - set(new_dets_ind)
+                for idxNewDet in new_detections_no_selected:
+                    if np.random.uniform() > self.BIRTH_RATE:
+                        new_label = max(self.labels) + 1
+                        new_detections[idxNewDet].label = new_label
+                        self.birth_model.append(new_detections[idxNewDet])
+                        self.labels.append(new_label)
+            else:
+                for idxNewDet, det in enumerate(new_detections):
+                    if np.random.uniform() > self.BIRTH_RATE:
+                        new_label = max(self.labels) + 1
+                        new_detections[idxNewDet].label = new_label
+                        self.birth_model.append(new_detections[idxNewDet])
+                        self.labels.append(new_label)
 
             self.tracks = nms(new_tracks, 0.7, 0, 0.5)
             #self.tracks = new_tracks
