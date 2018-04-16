@@ -80,7 +80,6 @@ if __name__ == '__main__':
 
         if not outputQueue.empty():
             detections = outputQueue.get()
-            print detections.shape
 
         if detections is not None:
             box_detections = []
@@ -96,7 +95,7 @@ if __name__ == '__main__':
                 (startX, startY, endX, endY) = box.astype("int")
 
                 '''
-                label = "{}: {:.2f}%".format(CLASSES[idx],
+                label = "{}: {:.2f}%".format(CLASSES[idx],  qq
                     confidence * 100)
                 cv2.rectangle(frame, (startX, startY), (endX, endY),
                     COLORS[idx], 2)

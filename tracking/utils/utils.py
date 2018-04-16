@@ -12,10 +12,10 @@ class Rectangle:
         self.p_max = (x_max,y_max)
 
 class Detection:
-    conf = 0.0
-    def __init__(self, x_min, y_min, x_max, y_max, conf = None):
+    def __init__(self, x_min, y_min, x_max, y_max, conf = None, feature = None):
         self.bbox = Rectangle(x_min, y_min, x_max, y_max)
         self.conf = conf
+        self.feature = feature
 
 class Target:
     def __init__(self, bbox = None, label = None, color = None, conf = None, survival_rate = None, feature = None):

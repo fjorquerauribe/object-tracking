@@ -22,7 +22,7 @@ if __name__ == '__main__':
             generator = ImageGenerator(args['images'], args['groundtruth'])
         
         verbose = False
-        draw = False
+        draw = True
         
         if draw:
             cv2.namedWindow('MTT', cv2.WINDOW_NORMAL)
@@ -38,6 +38,7 @@ if __name__ == '__main__':
 
             if args['detections']:
                 detections = generator.get_detections(i)
+                #features = generator.get_features(i)
             else:
                 detections = detector.detect(img)
 

@@ -35,7 +35,7 @@ class GMPHDFilter:
     def reinitialize(self):
         self.initialized = False
 
-    def initialize(self, img, detections = None):
+    def initialize(self, img, detections = None, features = None):
         (self.img_height, self.img_width, self.n_channels) = img.shape
         self.tracks = []
         if len(detections) > 0 and detections:

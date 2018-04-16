@@ -133,7 +133,7 @@ class MTTImageGenerator():
                 conf = float(line[6])
                 self.det_weights[num_frame - 1] = np.append(self.det_weights[num_frame - 1], float(line[6]))
                 feat = map(float, line[10:])
-                detection = Detection(x_min, y_min, x_max, y_max, conf)
+                detection = Detection(x_min, y_min, x_max, y_max, conf, np.array(feat))
                 self.detections[num_frame - 1].append(detection)
                 self.features[num_frame - 1] = np.append(self.features[num_frame - 1], np.array([feat]), axis = 0)
 
