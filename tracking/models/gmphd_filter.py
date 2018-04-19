@@ -40,16 +40,16 @@ class GMPHDFilter:
         (self.img_height, self.img_width, self.n_channels) = img.shape
         self.tracks = []
         if len(detections) > 0 and detections:
-            for det in detections:
-                cv2.rectangle(img, det.bbox.p_min, det.bbox.p_max, (0, 255, 0), 2)
+            #for det in detections:
+            #    cv2.rectangle(img, (det.bbox.x, det.bbox.y), (det.bbox.x + det.bbox.width, det.bbox.y + det.bbox.height), (255,0,0), 3)
             #features = self.resnet.get_features(img, detections)
             for idx, det in enumerate(detections):
                 if calcHist:
                     # falta feature, hist es solo temporal
-                    x1 = int(det.bbox.p_min[0])
-                    y1 = int(det.bbox.p_min[1])
-                    x2 = int(det.bbox.p_max[0])
-                    y2 = int(det.bbox.p_max[1])
+                    x1 = int(det.bbox.x)
+                    y1 = int(det.bbox.y)
+                    x2 = int(det.bbox.x + det.bbox.width)
+                    y2 = int(det.bbox.y + det.bbox.height)
                     crop_img = img[y1:y2, x1:x2]
                     crop_img = cv2.resize(crop_img, (50,50))
                     hist = cv2.calcHist( [ crop_img ], [0, 1, 2], None, [8, 8, 8], [0, 256, 0, 256, 0, 256]).flatten()
@@ -66,10 +66,10 @@ class GMPHDFilter:
         if self.is_initialized():
             predicted_tracks = []
             for track in self.tracks:
-                x = track.bbox.p_min[0] + int(round(stats.norm.rvs( loc = 0.0, scale = self.POS_STD_X )))
-                y = track.bbox.p_min[1] + int(round(stats.norm.rvs( loc = 0.0, scale = self.POS_STD_Y )))
-                w = track.bbox.p_max[0] - track.bbox.p_min[0] + int(round(stats.norm.rvs( loc = 0.0, scale = self.SCALE_STD_WIDTH )))
-                h = track.bbox.p_max[1] - track.bbox.p_min[1] + int(round(stats.norm.rvs( loc = 0.0, scale = self.SCALE_STD_HEIGHT )))
+                x = track.bbox.x + int(round(stats.norm.rvs( loc = 0.0, scale = self.POS_STD_X )))
+                y = track.bbox.y + int(round(stats.norm.rvs( loc = 0.0, scale = self.POS_STD_Y )))
+                w = track.bbox.width + int(round(stats.norm.rvs( loc = 0.0, scale = self.SCALE_STD_WIDTH )))
+                h = track.bbox.height + int(round(stats.norm.rvs( loc = 0.0, scale = self.SCALE_STD_HEIGHT )))
                 if x < 0:
                     x = 0
                 if y < 0:
@@ -79,8 +79,10 @@ class GMPHDFilter:
                 if(y + h) > self.img_height:
                     h = self.img_height - y
                 if np.random.uniform() < track.survival_rate:
-                    track.bbox.p_min = (x,y)
-                    track.bbox.p_max = (x + w, y + h)
+                    track.bbox.x = x
+                    track.bbox.y = y
+                    track.bbox.width = w
+                    track.bbox.height = h
                     predicted_tracks.append(track)
             
             for track in self.birth_model:
@@ -96,10 +98,10 @@ class GMPHDFilter:
             for idx, det in enumerate(detections):
                 if calcHist:
                     # falta feature, hist es solo temporal
-                    x1 = int(det.bbox.p_min[0])
-                    y1 = int(det.bbox.p_min[1])
-                    x2 = int(det.bbox.p_max[0])
-                    y2 = int(det.bbox.p_max[1])
+                    x1 = int(det.bbox.x)
+                    y1 = int(det.bbox.y)
+                    x2 = int(det.bbox.x + det.bbox.width)
+                    y2 = int(det.bbox.y + det.bbox.height)
                     crop_img = img[y1:y2, x1:x2]
                     crop_img = cv2.resize(crop_img, (50,50))
                     hist = cv2.calcHist( [ crop_img ], [0, 1, 2], None, [8, 8, 8], [0, 256, 0, 256, 0, 256]).flatten()
@@ -119,7 +121,7 @@ class GMPHDFilter:
             if len(self.tracks) > 0:
                 diagonal = np.sqrt( np.power(self.img_height, 2) + np.power(self.img_width, 2) )
                 area = self.img_height * self.img_width
-                cost = cost_matrix(self.tracks, new_detections, diagonal, area, True)
+                cost = cost_matrix(self.tracks, new_detections, diagonal, area, False)
 
                 tracks_ind, new_dets_ind = linear_sum_assignment(cost)
                 
@@ -152,22 +154,20 @@ class GMPHDFilter:
                         self.birth_model.append(new_detections[idxNewDet])
                         self.labels.append(new_label)
 
-            dpp = DPP()
-            self.tracks = dpp.run(new_tracks)
+            #dpp = DPP()
+            #self.tracks = dpp.run(new_tracks)
             
             #self.tracks = nms(new_tracks, 0.7, 0, 0.5)
-            #self.tracks = new_tracks
+            self.tracks = new_tracks
 
 
     def estimate(self, img = None, draw = False, color = (0, 255, 0)):
         if self.initialized:
             if draw:
                 for track in self.tracks:
-                    cv2.rectangle(img, track.bbox.p_min, track.bbox.p_max, track.color, 3)
-                    startX = track.bbox.p_min[0]
-                    startY = track.bbox.p_min[1]
-                    y = startY - 15 if startY - 15 > 15 else startY + 15
-                    cv2.putText(img, str(track.label), (startX, y), cv2.FONT_HERSHEY_SIMPLEX, 0.5, track.color, 2)
+                    cv2.rectangle(img, (track.bbox.x, track.bbox.y), (track.bbox.x + track.bbox.width, track.bbox.y + track.bbox.height), track.color, 3)
+                    y = track.bbox.y - 15 if track.bbox.y - 15 > 15 else track.bbox.y + 15
+                    cv2.putText(img, str(track.label), (track.bbox.x, y), cv2.FONT_HERSHEY_SIMPLEX, 0.5, track.color, 2)
             if self.verbose:
                 print 'estimated targets: ' + str(len(self.tracks))
             return self.tracks

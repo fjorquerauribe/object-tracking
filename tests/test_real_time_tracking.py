@@ -1,5 +1,5 @@
 # USAGE
-# python real_time_object_detection.py --prototxt MobileNetSSD_deploy.prototxt.txt --model MobileNetSSD_deploy.caffemodel
+# python test_real_time_tracking.py --prototxt ../data/MobileNetSSD_deploy.prototxt.txt --model ../data/MobileNetSSD_deploy.caffemodel
 
 from imutils.video import VideoStream
 from imutils.video import FPS
@@ -62,7 +62,13 @@ while True:
 			idx = int(detections[0, 0, i, 1])
 			box = detections[0, 0, i, 3:7] * np.array([w, h, w, h])
 			(startX, startY, endX, endY) = box.astype("int")
-			box_detections.append(Detection(max(0,startX), max(0,startY), min(frame_width,endX), min(frame_height,endY), confidence))
+
+			x = max(0,startX)
+			y = max(0,startY)
+			width = endX - x
+			height = endY - y
+			box_detections.append(Detection(x, y, width, height))
+			#box_detections.append(Detection(max(0,startX), max(0,startY), min(frame_width,endX), min(frame_height,endY), confidence))
 
 			'''
 			label = "{}: {:.2f}%".format(CLASSES[idx],

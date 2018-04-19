@@ -7,13 +7,15 @@ from scipy.optimize import linear_sum_assignment
 from scipy.spatial.distance import cosine
 
 class Rectangle:
-    def __init__(self, x_min, y_min, x_max, y_max):
-        self.p_min = (x_min,y_min)
-        self.p_max = (x_max,y_max)
+    def __init__(self, x, y, width, height):
+        self.x = x
+        self.y = y
+        self.width = width
+        self.height = height
 
 class Detection:
-    def __init__(self, x_min, y_min, x_max, y_max, conf = None, feature = None):
-        self.bbox = Rectangle(x_min, y_min, x_max, y_max)
+    def __init__(self, x, y, width, height, conf = None, feature = None):
+        self.bbox = Rectangle(x, y, width, height)
         self.conf = conf
         self.feature = feature
 
@@ -61,11 +63,11 @@ def bhatta(hist1, hist2):
 def cost_matrix(tracks, new_tracks, diagonal = 1.0, area = 1.0, norm = False):
     tracks_centroids = np.empty((0, 2), dtype = float)
     for t in tracks:
-        tracks_centroids = np.append(tracks_centroids, [[ (t.bbox.p_max[0] + t.bbox.p_min[0])/2, (t.bbox.p_max[1] + t.bbox.p_min[1])/2 ]], axis = 0)
+        tracks_centroids = np.append(tracks_centroids, [[ (t.bbox.x + float(t.bbox.width)/2), (t.bbox.y + float(t.bbox.height)/2) ]], axis = 0)
     
     new_tracks_centroids = np.empty((0, 2), dtype = float)
     for t in new_tracks:
-        new_tracks_centroids = np.append(new_tracks_centroids, [[ (t.bbox.p_max[0] + t.bbox.p_min[0])/2, (t.bbox.p_max[1] + t.bbox.p_min[1])/2 ]], axis = 0)
+        new_tracks_centroids = np.append(new_tracks_centroids, [[ (t.bbox.x + float(t.bbox.width)/2), (t.bbox.y + float(t.bbox.height)/2) ]], axis = 0)
     
     cost = euclidean_distances(tracks_centroids, new_tracks_centroids)
     
@@ -137,20 +139,20 @@ def nms(boxes, thresh, neighbors = 0, minScoresSum = 0.0):
     while len(idxs) > 0:
         lastElem = idxs.pop()
         rect1 = boxes[lastElem[1]].bbox
-        x1 = rect1.p_min[0]
-        y1 = rect1.p_min[1]
-        w1 = rect1.p_max[0] - rect1.p_min[0]
-        h1 = rect1.p_max[1] - rect1.p_min[1]
+        x1 = rect1.x
+        y1 = rect1.y
+        w1 = rect1.width
+        h1 = rect1.height
         
         neighborsCount = 0
         scoresSum = lastElem[0]
 
         for idx in idxs:
             rect2 = boxes[idx[1]].bbox
-            x2 = rect2.p_min[0]
-            y2 = rect2.p_min[1]
-            w2 = rect2.p_max[0] - rect2.p_min[0]
-            h2 = rect2.p_max[1] - rect2.p_min[1]
+            x2 = rect2.x
+            y2 = rect2.y
+            w2 = rect2.width
+            h2 = rect2.height
 
             iou = intersection_over_union([x1,y1,w1,h1], [x2,y2,w2,h2])
             if iou > thresh:

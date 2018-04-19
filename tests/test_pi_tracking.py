@@ -103,8 +103,12 @@ if __name__ == '__main__':
                 cv2.putText(frame, label, (startX, y),
                     cv2.FONT_HERSHEY_SIMPLEX, 0.5, COLORS[idx], 2)
                 '''
-                
-                box_detections.append(Detection(max(0,startX), max(0,startY), min(frame_width,endX), min(frame_height,endY), confidence))
+                x = max(0,startX)
+                y = max(0,startY)
+                width = endX - x
+                height = endY - y
+                box_detections.append(Detection(x, y, width, height))
+                #box_detections.append(Detection(max(0,startX), max(0,startY), min(frame_width,endX), min(frame_height,endY), confidence))
                 
             if not filter.is_initialized():
                 filter.initialize(frame, box_detections)

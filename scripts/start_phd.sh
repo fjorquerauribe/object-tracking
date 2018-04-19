@@ -1,1 +1,1 @@
-python ../tests/test_phd.py -i ./data/$1/$2/$3/img1/ -g ./data/$1/$2/$3/gt/gt.txt -d ./data/$1/$2/$3/det/det.txt -npart $4
+python ../tests/test_phd.py -i ./data/$1/$2/$3/img1/ -g ./data/$1/$2/$3/gt/gt.txt -d ./data/detections/FRCNN/$1/$2/$3.txt -npart $4

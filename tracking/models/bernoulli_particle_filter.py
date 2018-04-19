@@ -44,9 +44,7 @@ class BernoulliParticleFilter:
 
     def initialize(self, img, groundtruth):
         self.detector = FasterRCNN()
-        self.reference = [groundtruth.p_min[0], groundtruth.p_min[1], \
-        groundtruth.p_max[0] - groundtruth.p_min[0], \
-        groundtruth.p_max[1] - groundtruth.p_min[1]]
+        self.reference = [groundtruth.x, groundtruth.y, groundtruth.width, groundtruth.height]
         (self.img_height, self.img_width, _) = img.shape # if BGR or RGB (height,width,n_channels) else if GRAY (height,width)
 
         # Samples
@@ -113,18 +111,18 @@ class BernoulliParticleFilter:
         if not detections:
             detections = self.detector.detect(img)
             for d in detections:
-                cv2.rectangle(img, d.bbox.p_min, d.bbox.p_max, (0,0,255), 2)
+                cv2.rectangle(img, (d.bbox.x, d.bbox.y), (d.bbox.x + d.bbox.width, d.bbox.y + d.bbox.height), (0,0,255), 3)
         
         if len(detections) > 0:
             location_weights = np.empty(len(detections), dtype = float)
             for idx, det in enumerate(detections):
-                obs = np.array([det.bbox.p_min[0], det.bbox.p_min[1], det.bbox.p_max[0] - det.bbox.p_min[0], det.bbox.p_max[1]- det.bbox.p_min[1]])
+                obs = np.array([det.bbox.x, det.bbox.y, det.bbox.width, det.bbox.height])
                 location_weights[idx] = math.exp(2.0 * (-1.0 + utils.intersection_over_union(self.reference, obs)))
 
             psi = np.empty((len(self.states),len(detections)), dtype = float)
             for i, state in enumerate(self.states):
                 for j, det in enumerate(detections):
-                    obs = np.array([det.bbox.p_min[0], det.bbox.p_min[1], det.bbox.p_max[0] - det.bbox.p_min[0], det.bbox.p_max[1]- det.bbox.p_min[1]])
+                    obs = np.array([det.bbox.x, det.bbox.y, det.bbox.width, det.bbox.height])
                     #print utils.intersection_over_union(state, obs)
                     psi[i,j] = location_weights[j] * math.exp(2.0 * (-1.0 + utils.intersection_over_union(state, obs)))
             

@@ -9,7 +9,7 @@ from tracking.utils.utils import Rectangle
 class PFTracker:
     pf = None
     def __init__(self, image, region):
-        initRegion = Rectangle(region.x, region.y, region.x + region.width, region.y + region.height)
+        initRegion = Rectangle(region.x, region.y, region.width, region.height)
         self.pf = ParticleFilter(100)
         self.pf.initialize(image, initRegion)
 

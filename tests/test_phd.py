@@ -18,19 +18,22 @@ if __name__ == '__main__':
 
     generator = ImageGenerator(args['images'], args['groundtruth'], args['detections'])
     
-    cv2.namedWindow('MTT', cv2.WINDOW_NORMAL)
+    verbose = True
+    draw = True
+    
+    if draw:
+        cv2.namedWindow('MTT', cv2.WINDOW_NORMAL)
     
     if args['images']:
         filter = PHDFilter(int(args['particles_batch']))
-        verbose = False
         idx = 1
         for i in xrange(generator.get_sequences_len()):
             img = generator.get_frame(i)
             gt = generator.get_groundtruth(i)
             detections = generator.get_detections(i)
 
-            for det in detections:
-                cv2.rectangle(img, det.bbox.p_min, det.bbox.p_max, (0, 255, 0), 2)
+            #for det in detections:
+            #    cv2.rectangle(img, (det.bbox.x, det.bbox.y), (det.bbox.x + det.bbox.width, det.bbox.y + det.bbox.height), (0, 255, 0), 2)
             
             if verbose:
                 print '-------------------------------------'
@@ -39,22 +42,23 @@ if __name__ == '__main__':
             estimates = []
             if not filter.is_initialized():
                 filter.initialize(img, detections)
-                estimates = filter.estimate(img, draw = False, verbose = verbose)
-                filter.draw_particles(img)
+                estimates = filter.estimate(img, draw = draw, verbose = verbose)
+                #filter.draw_particles(img)
             else:
                 filter.predict(verbose = verbose)
                 filter.update(img, detections, verbose = verbose)
-                estimates = filter.estimate(img, draw = False, verbose = verbose)
-                filter.draw_particles(img)
+                estimates = filter.estimate(img, draw = draw, verbose = verbose)
+                #filter.draw_particles(img)
             
             if estimates is not None:
                 for e in estimates:
-                    print str(idx) + ',' + str(e.label) + ',' + str(e.bbox.p_min[0]) + ',' + str(e.bbox.p_min[1]) + ','\
-                    + str(e.bbox.p_max[0] - e.bbox.p_min[0]) + ',' + str(e.bbox.p_max[1] - e.bbox.p_min[1])\
+                    print str(idx) + ',' + str(e.label) + ',' + str(e.bbox.x) + ',' + str(e.bbox.y) + ','\
+                    + str(e.bbox.width) + ',' + str(e.bbox.height)\
                     + ',1,-1,-1,-1'
             idx+=1
             
-            cv2.imshow('MTT', img)
-            cv2.waitKey(1)
+            if draw:
+                cv2.imshow('MTT', img)
+                cv2.waitKey(1)
     
     #cv2.destroyWindow('MTT')

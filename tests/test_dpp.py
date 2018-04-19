@@ -46,10 +46,10 @@ if __name__ == '__main__':
             
             for idx in indices:
                 bbox = detections[idx].bbox
-                x = bbox.p_min[0]
-                y = bbox.p_min[1]
-                width = bbox.p_max[0] - bbox.p_min[0]
-                height = bbox.p_max[1] - bbox.p_min[1]
+                x = bbox.x
+                y = bbox.y
+                width = bbox.width
+                height = bbox.height
             
                 print str(i + 1) + ',' + str('-1') + ',' + str(x) + ',' + str(y) + ',' \
                 + str(width) + ',' + str(height) + ',' + str(weights[idx]) \

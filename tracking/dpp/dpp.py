@@ -22,17 +22,17 @@ class DPP:
                     area = np.empty(len(boxes), dtype = float)
                     intersection = np.empty((len(boxes), len(boxes)) , dtype = float)
                     for i in xrange(len(boxes)):
-                        x1 = boxes[i].bbox.p_min[0]
-                        y1 = boxes[i].bbox.p_min[1]
-                        w1 = boxes[i].bbox.p_max[0] - boxes[i].bbox.p_min[0]
-                        h1 = boxes[i].bbox.p_max[1] - boxes[i].bbox.p_min[1]
+                        x1 = boxes[i].bbox.x
+                        y1 = boxes[i].bbox.y
+                        w1 = boxes[i].bbox.width
+                        h1 = boxes[i].bbox.height
                         area[i] = w1 * h1
 
                         for j in xrange(i, len(boxes)):
-                            x2 = boxes[j].bbox.p_min[0]
-                            y2 = boxes[j].bbox.p_min[1]
-                            w2 = boxes[j].bbox.p_max[0] - boxes[j].bbox.p_min[0]
-                            h2 = boxes[j].bbox.p_max[1] - boxes[j].bbox.p_min[1]
+                            x2 = boxes[j].bbox.x
+                            y2 = boxes[j].bbox.y
+                            w2 = boxes[j].bbox.width
+                            h2 = boxes[j].bbox.height
                             intersection[i,j] = intersection[j,i] = get_overlap_area([x1, y1, w1, h1], [x2, y2, w2, h2])
                             
                     sqrtArea = np.sqrt(np.array(area))
@@ -139,17 +139,17 @@ class DPP:
 
         for i in xrange(len(tracks)):
             feat1 = tracks[i].feature
-            x1 = tracks[i].bbox.p_min[0]
-            y1 = tracks[i].bbox.p_min[1]
-            w1 = tracks[i].bbox.p_max[0] - tracks[i].bbox.p_min[0]
-            h1 = tracks[i].bbox.p_max[1] - tracks[i].bbox.p_min[1]
+            x1 = tracks[i].bbox.x
+            y1 = tracks[i].bbox.y
+            w1 = tracks[i].bbox.width
+            h1 = tracks[i].bbox.height
             
             for j in xrange(i, len(tracks)):
                 feat2 = tracks[j].feature
-                x2 = tracks[j].bbox.p_min[0]
-                y2 = tracks[j].bbox.p_min[1]
-                w2 = tracks[j].bbox.p_max[0] - tracks[j].bbox.p_min[0]
-                h2 = tracks[j].bbox.p_max[1] - tracks[j].bbox.p_min[1]
+                x2 = tracks[j].bbox.x
+                y2 = tracks[j].bbox.y
+                w2 = tracks[j].bbox.width
+                h2 = tracks[j].bbox.height
                 
                 app = np.exp( -w * ((feat1 - feat2)**2).sum() )
                 #motion = np.exp( -w * ( np.power( float(x1-x2)/float() ,2) + np.power( ,2) ) )

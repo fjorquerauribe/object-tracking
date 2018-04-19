@@ -13,10 +13,10 @@ THRESHOLD = 10
 
 class ParticleFilter:
     DIM = 4 # x,y,width,height
-    POS_STD_X = 1.0
-    POS_STD_Y = 1.0
-    SCALE_STD_WIDTH = 0.0
-    SCALE_STD_HEIGHT = 0.0
+    POS_STD_X = 3.0
+    POS_STD_Y = 3.0
+    SCALE_STD_WIDTH = 3.0
+    SCALE_STD_HEIGHT = 3.0
     OVERLAP_RATIO = 0.2
     NEG_STD_X = 30.0
     NEG_STD_Y = 30.0
@@ -42,9 +42,7 @@ class ParticleFilter:
         self.initialized = False
 
     def initialize(self, image, groundtruth):
-        self.reference = [groundtruth.p_min[0], groundtruth.p_min[1], \
-            groundtruth.p_max[0] - groundtruth.p_min[0], \
-            groundtruth.p_max[1] - groundtruth.p_min[1]]
+        self.reference = [groundtruth.x, groundtruth.y, groundtruth.width, groundtruth.height]
         (self.img_height, self.img_width, ) = image.shape # if BGR or RGB (height,width,n_channels) else if GRAY (height,width)
 
         # Positive samples
@@ -135,7 +133,7 @@ class ParticleFilter:
             hist = cv2.calcHist( [ crop_img ],\
              [0], None, [256], [0,256])
             self.weights[idx] = math.exp(-1.0 * cv2.compareHist(self.histReference, hist, cv2.HISTCMP_BHATTACHARYYA)) #cv2.HISTCMP_CHISQR
-            print cv2.compareHist(self.histReference, hist, cv2.HISTCMP_BHATTACHARYYA)#self.weights[idx]
+            #print cv2.compareHist(self.histReference, hist, cv2.HISTCMP_BHATTACHARYYA)#self.weights[idx]
         self.resample()
 
     def resample(self):

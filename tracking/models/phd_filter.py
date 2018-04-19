@@ -63,10 +63,10 @@ class PHDFilter:
             self.persistent_states = np.empty((self.particles_batch * len(detections), self.DIM), dtype = int)
             idx = 0
             for det in detections:
-                self.persistent_states[idx*self.particles_batch:(idx+1)*self.particles_batch,0] = det.bbox.p_min[0] + dPosX.rvs(self.particles_batch)
-                self.persistent_states[idx*self.particles_batch:(idx+1)*self.particles_batch,1] = det.bbox.p_min[1] + dPosY.rvs(self.particles_batch)
-                self.persistent_states[idx*self.particles_batch:(idx+1)*self.particles_batch,2] = det.bbox.p_max[0] - det.bbox.p_min[0] + dWidth.rvs(self.particles_batch)
-                self.persistent_states[idx*self.particles_batch:(idx+1)*self.particles_batch,3] = det.bbox.p_max[1] - det.bbox.p_min[1] + dHeight.rvs(self.particles_batch)
+                self.persistent_states[idx*self.particles_batch:(idx+1)*self.particles_batch,0] = det.bbox.x + dPosX.rvs(self.particles_batch)
+                self.persistent_states[idx*self.particles_batch:(idx+1)*self.particles_batch,1] = det.bbox.y + dPosY.rvs(self.particles_batch)
+                self.persistent_states[idx*self.particles_batch:(idx+1)*self.particles_batch,2] = det.bbox.width + dWidth.rvs(self.particles_batch)
+                self.persistent_states[idx*self.particles_batch:(idx+1)*self.particles_batch,3] = det.bbox.height + dHeight.rvs(self.particles_batch)
                 
                 target = Target(det.bbox, idx, (random.randint(0,255), random.randint(0,255), random.randint(0,255)))
                 self.tracks.append(target)
@@ -116,10 +116,10 @@ class PHDFilter:
                 ( ( self.img_height * self.img_width * self.BIRTH_RATE ) / ( self.particles_batch * len(self.birth_model) ) )
                 idx = 0
                 for bm in self.birth_model:
-                    self.newborn_states[idx*self.particles_batch:(idx+1)*self.particles_batch,0] = bm.bbox.p_min[0] + dPosX.rvs(self.particles_batch)
-                    self.newborn_states[idx*self.particles_batch:(idx+1)*self.particles_batch,1] = bm.bbox.p_min[1] + dPosY.rvs(self.particles_batch)
-                    self.newborn_states[idx*self.particles_batch:(idx+1)*self.particles_batch,2] = bm.bbox.p_max[0] - bm.bbox.p_min[0] + dWidth.rvs(self.particles_batch)
-                    self.newborn_states[idx*self.particles_batch:(idx+1)*self.particles_batch,3] = bm.bbox.p_max[1] - bm.bbox.p_min[1] + dHeight.rvs(self.particles_batch) 
+                    self.newborn_states[idx*self.particles_batch:(idx+1)*self.particles_batch,0] = bm.bbox.x + dPosX.rvs(self.particles_batch)
+                    self.newborn_states[idx*self.particles_batch:(idx+1)*self.particles_batch,1] = bm.bbox.y + dPosY.rvs(self.particles_batch)
+                    self.newborn_states[idx*self.particles_batch:(idx+1)*self.particles_batch,2] = bm.bbox.width + dWidth.rvs(self.particles_batch)
+                    self.newborn_states[idx*self.particles_batch:(idx+1)*self.particles_batch,3] = bm.bbox.height + dHeight.rvs(self.particles_batch) 
                     idx+=1
             if verbose:
                 print 'predicted targets: ' + str(int(round(self.persistent_weights.sum())))
@@ -131,10 +131,10 @@ class PHDFilter:
             observations = np.empty((len(detections), self.DIM), dtype = float)
             idx = 0
             for det in detections:
-                observations[idx, 0] = det.bbox.p_min[0]
-                observations[idx, 1] = det.bbox.p_min[1]
-                observations[idx, 2] = det.bbox.p_max[0] - det.bbox.p_min[0]
-                observations[idx, 3] = det.bbox.p_max[1] - det.bbox.p_min[1]
+                observations[idx, 0] = det.bbox.x
+                observations[idx, 1] = det.bbox.y
+                observations[idx, 2] = det.bbox.width
+                observations[idx, 3] = det.bbox.height
                 idx+=1
             
             psi = np.empty((len(self.persistent_states),len(detections)), dtype = float)
@@ -183,7 +183,7 @@ class PHDFilter:
                 for et in estimated_targets:
                     while (label in self.labels or label in self.current_labels):
                         label+=1
-                    target = Target(Rectangle(et[0], et[1], et[0] + et[2], et[1] + et[3]), label,\
+                    target = Target(Rectangle(et[0], et[1], et[2], et[3]), label,\
                     (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255)) )
                     new_tracks.append(target)
                     self.current_labels.append(label)
@@ -215,7 +215,7 @@ class PHDFilter:
 
                 if draw:
                     for track in self.tracks:
-                        cv2.rectangle(img, track.bbox.p_min, track.bbox.p_max, track.color, 2)
+                        cv2.rectangle(img, (track.bbox.x, track.bbox.y), (track.bbox.x + track.bbox.width, track.bbox.y + track.bbox.height), track.color, 3)
                 if verbose:
                     print 'estimated targets: ' + str(num_estimated)
                 return self.tracks

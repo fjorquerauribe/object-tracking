@@ -22,7 +22,7 @@ if __name__ == '__main__':
             generator = ImageGenerator(args['images'], args['groundtruth'])
         
         verbose = False
-        draw = True
+        draw = False
         
         if draw:
             cv2.namedWindow('MTT', cv2.WINDOW_NORMAL)
@@ -36,12 +36,13 @@ if __name__ == '__main__':
             img = generator.get_frame(i)
             gt = generator.get_groundtruth(i)
 
+            
             if args['detections']:
                 detections = generator.get_detections(i)
                 #features = generator.get_features(i)
             else:
                 detections = detector.detect(img)
-
+            
             if verbose:
                 print '-------------------------------------'
                 print 'frame: ' + str(i)
@@ -60,11 +61,14 @@ if __name__ == '__main__':
             if not(verbose):
                 if estimates is not None:
                     for e in estimates:
-                        print str(idx) + ',' + str(e.label) + ',' + str(e.bbox.p_min[0]) + ',' + str(e.bbox.p_min[1]) + ','\
-                        + str(e.bbox.p_max[0] - e.bbox.p_min[0]) + ',' + str(e.bbox.p_max[1] - e.bbox.p_min[1])\
+                        print str(idx) + ',' + str(e.label) + ',' + str(e.bbox.x) + ',' + str(e.bbox.y) + ','\
+                        + str(e.bbox.width) + ',' + str(e.bbox.height)\
                         + ',1,-1,-1,-1'
                 idx+=1
             
+            #for det in detections:
+            #    cv2.rectangle(img, (det.bbox.x, det.bbox.y), (det.bbox.x + det.bbox.width, det.bbox.y + det.bbox.height), (255,0,0), 3)
+
             if draw:
                 cv2.imshow('MTT', img)
                 cv2.waitKey(1)

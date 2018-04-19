@@ -28,7 +28,7 @@ if __name__ == '__main__':
             #detections = utils.nms(detections, 0.7, 0, 0.5)
 
             for d in detections:
-                cv2.rectangle(img, d.bbox.p_min, d.bbox.p_max, (0,0,255), 3)
+                cv2.rectangle(img, (d.bbox.x, d.bbox.y), (d.bbox.x + d.bbox.width, d.bbox.y + d.bbox.height), (0,0,255), 3)
             
             cv2.imshow('Faster R-CNN', img)
             cv2.waitKey(1)

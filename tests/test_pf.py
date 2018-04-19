@@ -35,9 +35,9 @@ if __name__ == '__main__':
             else:
                 pf.predict()
                 pf.update(grayImg)
-                pf.draw_particles(img)
-                pf.estimate(img, True)
+                #pf.draw_particles(img)
+                pf.estimate(img, False)
             
-            cv2.rectangle(img, gt.p_min, gt.p_max, (0,0,255), 2)
+            cv2.rectangle(img, (gt.x, gt.y), (gt.x + gt.width, gt.y + gt.height), (0,0,255), 2)
             cv2.imshow('Tracker', img)
             cv2.waitKey(1)

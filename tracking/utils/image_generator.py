@@ -37,8 +37,11 @@ class STTImageGenerator():
                 line = line.rstrip().split(',')
                 xs = map(float, line[::2])
                 ys = map(float, line[1::2])
-                
-                gt = Rectangle( int(min(xs)), int(min(ys)), int(max(xs)), int(max(ys)) )
+                x = int(min(xs))
+                y = int(min(ys))
+                width = int(max(xs)) - x
+                height = int(max(ys)) - y
+                gt = Rectangle( x, y, width, height )
                 self.groundtruth[num_frame - 1] = gt
                 num_frame+=1
     
@@ -55,13 +58,13 @@ class STTImageGenerator():
                 if num_frame not in self.detections:
                     self.detections[num_frame] = []
                     self.det_weights[num_frame] = np.empty(0)
-                x_min = int(float(line[1]))
-                y_min = int(float(line[2]))
-                x_max = int(float(line[1]) + float(line[3]))
-                y_max = int(float(line[2]) + float(line[4]))
+                x = int(float(line[1]))
+                y = int(float(line[2]))
+                width = int(float(line[3]))
+                height = int(float(line[4]))
                 conf = float(line[5])
                 self.det_weights[num_frame] = np.append(self.det_weights[num_frame], conf)
-                detection = Detection(x_min, y_min, x_max, y_max, conf)
+                detection = Detection(x, y, width, height, conf)
                 self.detections[num_frame].append(detection)
 
     def get_sequences_len(self):
@@ -126,14 +129,14 @@ class MTTImageGenerator():
                     self.detections[num_frame - 1] = []
                     self.features[num_frame - 1] = np.empty((0, self.FEATURES_DIM))
                     self.det_weights[num_frame - 1] = np.empty(0)
-                x_min = int(float(line[2]))
-                y_min = int(float(line[3]))
-                x_max = int(float(line[2]) + float(line[4]))
-                y_max = int(float(line[3]) + float(line[5]))
+                x = int(float(line[2]))
+                y = int(float(line[3]))
+                width = int(float(line[4]))
+                height = int(float(line[5]))
                 conf = float(line[6])
                 self.det_weights[num_frame - 1] = np.append(self.det_weights[num_frame - 1], float(line[6]))
                 feat = map(float, line[10:])
-                detection = Detection(x_min, y_min, x_max, y_max, conf, np.array(feat))
+                detection = Detection(x, y, width, height, conf, np.array(feat))
                 self.detections[num_frame - 1].append(detection)
                 self.features[num_frame - 1] = np.append(self.features[num_frame - 1], np.array([feat]), axis = 0)
 
@@ -148,11 +151,12 @@ class MTTImageGenerator():
                 num_frame = int(line[0])
                 if num_frame - 1 not in self.groundtruth:
                     self.groundtruth[num_frame - 1] = []
-                x_min = int(float(line[2]))
-                y_min = int(float(line[3]))
-                x_max = int(float(line[2]) + float(line[4]))
-                y_max = int(float(line[3]) + float(line[5]))
-                gt = Rectangle(x_min, y_min, x_max, y_max)
+                #print int(float(line[1]))
+                x = int(float(line[2]))
+                y = int(float(line[3]))
+                width = int(float(line[4]))
+                height = int(float(line[5]))
+                gt = Rectangle(x, y, width, height)
                 self.groundtruth[num_frame - 1].append(gt)
 
     def get_sequences_len(self):

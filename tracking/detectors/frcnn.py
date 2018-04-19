@@ -112,7 +112,7 @@ class FasterRCNN:
                     x2 = int(round(box[2]))
                     y2 = int(round(box[3]))
                     score = int(round(box[4]))
-                    new_det = Detection(x1, y1, x2, y2, score)
+                    new_det = Detection(x1, y1, x2 - x1, y2 - y1, score)
                     detections.append(new_det)
                     if verbose:
                         format_str = ('%d,%d,%d,%d,%.3f')
