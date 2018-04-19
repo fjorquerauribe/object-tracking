@@ -1,4 +1,5 @@
 from utils import Target, Rectangle, cost_matrix, nms
+from tracking.dpp.dpp import DPP
 #from resnet import Resnet
 import scipy.stats as stats
 from scipy.optimize import linear_sum_assignment
@@ -12,7 +13,7 @@ class GMPHDFilter:
     POS_STD_Y = 3.0
     SCALE_STD_WIDTH = 3.0
     SCALE_STD_HEIGHT = 3.0
-    THRESHOLD = 10
+    THRESHOLD = 10.0
     SURVIVAL_RATE = 1.0
     SURVIVAL_DECAY = 1.0
     CLUTTER_RATE = 2.0
@@ -35,7 +36,7 @@ class GMPHDFilter:
     def reinitialize(self):
         self.initialized = False
 
-    def initialize(self, img, detections = None, features = None):
+    def initialize(self, img, detections = None, calcHist = False):
         (self.img_height, self.img_width, self.n_channels) = img.shape
         self.tracks = []
         if len(detections) > 0 and detections:
@@ -43,17 +44,19 @@ class GMPHDFilter:
                 cv2.rectangle(img, det.bbox.p_min, det.bbox.p_max, (0, 255, 0), 2)
             #features = self.resnet.get_features(img, detections)
             for idx, det in enumerate(detections):
-                # falta feature, hist es solo temporal
-                x1 = int(det.bbox.p_min[0])
-                y1 = int(det.bbox.p_min[1])
-                x2 = int(det.bbox.p_max[0])
-                y2 = int(det.bbox.p_max[1])
-                crop_img = img[y1:y2, x1:x2]
-                crop_img = cv2.resize(crop_img, (50,50))
-                hist = cv2.calcHist( [ crop_img ], [0, 1, 2], None, [8, 8, 8], [0, 256, 0, 256, 0, 256]).flatten()
-                target = Target(det.bbox, idx, (random.randint(0,255), random.randint(0,255), random.randint(0,255)), det.conf, self.SURVIVAL_RATE, hist)
-                #############################
-                
+                if calcHist:
+                    # falta feature, hist es solo temporal
+                    x1 = int(det.bbox.p_min[0])
+                    y1 = int(det.bbox.p_min[1])
+                    x2 = int(det.bbox.p_max[0])
+                    y2 = int(det.bbox.p_max[1])
+                    crop_img = img[y1:y2, x1:x2]
+                    crop_img = cv2.resize(crop_img, (50,50))
+                    hist = cv2.calcHist( [ crop_img ], [0, 1, 2], None, [8, 8, 8], [0, 256, 0, 256, 0, 256]).flatten()
+                    target = Target(det.bbox, idx, (random.randint(0,255), random.randint(0,255), random.randint(0,255)), det.conf, self.SURVIVAL_RATE, hist)
+                    #############################
+                else:
+                    target = Target(det.bbox, idx, (random.randint(0,255), random.randint(0,255), random.randint(0,255)), det.conf, self.SURVIVAL_RATE, det.feature)
                 #target = Target(det.bbox, idx, (random.randint(0,255), random.randint(0,255), random.randint(0,255)), det.conf, self.SURVIVAL_RATE, features[idx,:])
                 self.tracks.append(target)
                 self.labels.append(idx)
@@ -85,24 +88,28 @@ class GMPHDFilter:
             
             self.tracks = predicted_tracks
 
-    def update(self, img, detections = None, verbose = False):
+    def update(self, img, detections = None, verbose = False, calcHist = False):
         self.birth_model = []
         if self.is_initialized() and len(detections) > 0 and detections:
             #features = self.resnet.get_features(img, detections)
             new_detections = []
             for idx, det in enumerate(detections):
-                # falta feature, hist es solo temporal
-                x1 = int(det.bbox.p_min[0])
-                y1 = int(det.bbox.p_min[1])
-                x2 = int(det.bbox.p_max[0])
-                y2 = int(det.bbox.p_max[1])
-                crop_img = img[y1:y2, x1:x2]
-                crop_img = cv2.resize(crop_img, (50,50))
-                hist = cv2.calcHist( [ crop_img ], [0, 1, 2], None, [8, 8, 8], [0, 256, 0, 256, 0, 256]).flatten()
-                
-                target = Target(bbox = det.bbox, color = (random.randint(0,255), random.randint(0,255), random.randint(0,255)),\
-                 conf = det.conf, survival_rate = self.SURVIVAL_RATE, feature = hist)
-                #############################
+                if calcHist:
+                    # falta feature, hist es solo temporal
+                    x1 = int(det.bbox.p_min[0])
+                    y1 = int(det.bbox.p_min[1])
+                    x2 = int(det.bbox.p_max[0])
+                    y2 = int(det.bbox.p_max[1])
+                    crop_img = img[y1:y2, x1:x2]
+                    crop_img = cv2.resize(crop_img, (50,50))
+                    hist = cv2.calcHist( [ crop_img ], [0, 1, 2], None, [8, 8, 8], [0, 256, 0, 256, 0, 256]).flatten()
+                    
+                    target = Target(bbox = det.bbox, color = (random.randint(0,255), random.randint(0,255), random.randint(0,255)),\
+                    conf = det.conf, survival_rate = self.SURVIVAL_RATE, feature = hist)
+                    #############################
+                else:
+                    target = Target(bbox = det.bbox, color = (random.randint(0,255), random.randint(0,255), random.randint(0,255)),\
+                    conf = det.conf, survival_rate = self.SURVIVAL_RATE, feature = det.feature)
                 
                 #target = Target(bbox = det.bbox, color = (random.randint(0,255), random.randint(0,255), random.randint(0,255)),\
                 # conf = det.conf, survival_rate = self.SURVIVAL_RATE, feature = features[idx,:])
@@ -145,7 +152,10 @@ class GMPHDFilter:
                         self.birth_model.append(new_detections[idxNewDet])
                         self.labels.append(new_label)
 
-            self.tracks = nms(new_tracks, 0.7, 0, 0.5)
+            dpp = DPP()
+            self.tracks = dpp.run(new_tracks)
+            
+            #self.tracks = nms(new_tracks, 0.7, 0, 0.5)
             #self.tracks = new_tracks
 
 

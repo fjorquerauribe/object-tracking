@@ -67,25 +67,26 @@ def cost_matrix(tracks, new_tracks, diagonal = 1.0, area = 1.0, norm = False):
     for t in new_tracks:
         new_tracks_centroids = np.append(new_tracks_centroids, [[ (t.bbox.p_max[0] + t.bbox.p_min[0])/2, (t.bbox.p_max[1] + t.bbox.p_min[1])/2 ]], axis = 0)
     
-    #print tracks_centroids
-    #print new_tracks_centroids
     cost = euclidean_distances(tracks_centroids, new_tracks_centroids)
     
     if norm:
-        #print cost
-        #print '-------------------------------'
-        
         feature_cost = np.zeros((len(tracks), len(new_tracks)), dtype = float)
         for idx1, t in enumerate(tracks):
             for idx2, nt in enumerate(new_tracks):
-                #feature_cost[idx1, idx2] = ((t.feature - nt.feature)**2).sum()
-                feature_cost[idx1, idx2] = cv2.compareHist(t.feature, nt.feature, cv2.HISTCMP_CORREL)
+                feature_cost[idx1, idx2] = 1.0 + ((t.feature - nt.feature)**2).sum()
+                #print feature_cost[idx1, idx2]
+                #feature_cost[idx1, idx2] = cv2.compareHist(t.feature, nt.feature, cv2.HISTCMP_CORREL)
+        
 
         position_cost = 1.0 + cost/diagonal
         scale_cost = 1.0 + cost/area
         
-        #cost = feature_cost * position_cost * scale_cost
-        cost = position_cost * scale_cost
+        cost = feature_cost * position_cost * scale_cost
+
+        cost = (cost - cost.min()) / (cost.max() - cost.min())
+        cost = 100.0 * cost
+        #print cost
+        #cost = position_cost * scale_cost
         #print (feature_cost - feature_cost.min())/ (feature_cost.max() - feature_cost.min())
         #print '-----------------------------'
         #print cost
