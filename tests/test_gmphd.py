@@ -9,7 +9,7 @@ from frcnn import FasterRCNN
 if __name__ == '__main__':
     parser = ap.ArgumentParser()
     group = parser.add_argument_group()
-    group.add_argument('-i', '--images', help = 'Path to images folder')
+    group.add_argument('-i', '--images', help = 'Path to images folder', required = True)
     group.add_argument('-g', '--groundtruth', help = 'Path to groundtruth file', required = True)
     group.add_argument('-d', '--detections', help = 'Path to detections file')
     args = vars(parser.parse_args())
@@ -22,7 +22,7 @@ if __name__ == '__main__':
             generator = ImageGenerator(args['images'], args['groundtruth'])
         
         verbose = False
-        draw = False
+        draw = True
         
         if draw:
             cv2.namedWindow('MTT', cv2.WINDOW_NORMAL)
@@ -64,6 +64,9 @@ if __name__ == '__main__':
                         print str(idx) + ',' + str(e.label) + ',' + str(e.bbox.x) + ',' + str(e.bbox.y) + ','\
                         + str(e.bbox.width) + ',' + str(e.bbox.height)\
                         + ',1,-1,-1,-1'
+                        #print type(e.bbox.width)
+                        #if (e.bbox.width == 0) or (e.bbox.height == 0):
+                        #    exit()
                 idx+=1
             
             #for det in detections:

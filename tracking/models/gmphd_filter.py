@@ -74,6 +74,10 @@ class GMPHDFilter:
                     x = 0
                 if y < 0:
                     y = 0
+                if w == 0:
+                    w = track.bbox.width
+                if h == 0:
+                    h = track.bbox.height
                 if(x + w) > self.img_width:
                     w = self.img_width - x
                 if(y + h) > self.img_height:
@@ -157,8 +161,8 @@ class GMPHDFilter:
             #dpp = DPP()
             #self.tracks = dpp.run(new_tracks)
             
-            #self.tracks = nms(new_tracks, 0.7, 0, 0.5)
-            self.tracks = new_tracks
+            self.tracks = nms(new_tracks, 0.7, 0, 0.5)
+            #self.tracks = new_tracks
 
 
     def estimate(self, img = None, draw = False, color = (0, 255, 0)):
