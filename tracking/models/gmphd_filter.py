@@ -120,15 +120,18 @@ class GMPHDFilter:
                 #target = Target(bbox = det.bbox, color = (random.randint(0,255), random.randint(0,255), random.randint(0,255)),\
                 # conf = det.conf, survival_rate = self.SURVIVAL_RATE, feature = features[idx,:])
                 new_detections.append(target)
+            #    print str(target.bbox.x) + ',' + str(target.bbox.y) + ',' + str(target.bbox.width) + ',' + str(target.bbox.height)
+            #print '################'
             
             new_tracks = []
             if len(self.tracks) > 0:
                 diagonal = np.sqrt( np.power(self.img_height, 2) + np.power(self.img_width, 2) )
                 area = self.img_height * self.img_width
-                cost = cost_matrix(self.tracks, new_detections, diagonal, area, False)
+                cost = cost_matrix(self.tracks, new_detections, diagonal, area, True)
 
                 tracks_ind, new_dets_ind = linear_sum_assignment(cost)
-                
+                #print str(new_detections[3].bbox.x) + ',' + str(new_detections[3].bbox.y) + ',' + str(new_detections[3].bbox.width) + ',' + str(new_detections[3].bbox.height)
+                dets_high_cost = set()
                 for idxTrack, idxNewDet in zip(tracks_ind, new_dets_ind):
                     if cost[idxTrack, idxNewDet] < self.THRESHOLD:
                         new_detections[idxNewDet].label = self.tracks[idxTrack].label
@@ -137,19 +140,25 @@ class GMPHDFilter:
                     else:
                         self.tracks[idxTrack].survival_rate = np.exp(self.SURVIVAL_DECAY * (-1.0 + self.tracks[idxTrack].survival_rate * 0.9))
                         new_tracks.append(self.tracks[idxTrack])
+                        dets_high_cost.add(idxNewDet)
                 
                 tracks_no_selected = set(np.arange(len(self.tracks))) - set(tracks_ind)
                 for idxTrack in tracks_no_selected:
+                    #print str(new_tracks[idxTrack].bbox.x) + ',' + str(new_tracks[idxTrack].bbox.y) + ',' + str(new_tracks[idxTrack].bbox.width) + ',' + str(new_tracks[idxTrack].bbox.height)
                     self.tracks[idxTrack].survival_rate = np.exp(self.SURVIVAL_DECAY * (-1.0 + self.tracks[idxTrack].survival_rate * 0.9))
                     new_tracks.append(self.tracks[idxTrack])
+                #print '###################'
                 
                 new_detections_no_selected = set(np.arange(len(new_detections))) - set(new_dets_ind)
+                new_detections_no_selected = new_detections_no_selected | dets_high_cost
                 for idxNewDet in new_detections_no_selected:
+                    #print str(new_detections[idxNewDet].bbox.x) + ',' + str(new_detections[idxNewDet].bbox.y) + ',' + str(new_detections[idxNewDet].bbox.width) + ',' + str(new_detections[idxNewDet].bbox.height)
                     if np.random.uniform() > self.BIRTH_RATE:
                         new_label = max(self.labels) + 1
                         new_detections[idxNewDet].label = new_label
                         self.birth_model.append(new_detections[idxNewDet])
                         self.labels.append(new_label)
+                #print '###################'
             else:
                 for idxNewDet, det in enumerate(new_detections):
                     if np.random.uniform() > self.BIRTH_RATE:
@@ -158,10 +167,9 @@ class GMPHDFilter:
                         self.birth_model.append(new_detections[idxNewDet])
                         self.labels.append(new_label)
 
-            #dpp = DPP()
-            #self.tracks = dpp.run(new_tracks)
-            
-            self.tracks = nms(new_tracks, 0.7, 0, 0.5)
+            dpp = DPP()
+            self.tracks = dpp.run(boxes = new_tracks, img_size = (self.img_width, self.img_height))
+            #self.tracks = nms(new_tracks, 0.7, 0, 0.5)
             #self.tracks = new_tracks
 
 

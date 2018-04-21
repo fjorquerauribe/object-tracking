@@ -22,7 +22,7 @@ if __name__ == '__main__':
             generator = ImageGenerator(args['images'], args['groundtruth'])
         
         verbose = False
-        draw = True
+        draw = False
         
         if draw:
             cv2.namedWindow('MTT', cv2.WINDOW_NORMAL)

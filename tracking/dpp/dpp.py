@@ -11,7 +11,7 @@ class DPP:
         self.mu = mu
         self.epsilon = epsilon
 
-    def run(self, boxes = None, weights = None, features = None):
+    def run(self, boxes = None, weights = None, features = None, img_size = None):
         if (len(boxes) > 0) and (boxes is not None):
             if (weights is not None) and (features is not None):
                 area = np.empty(len(boxes), dtype = float)
@@ -44,7 +44,7 @@ class DPP:
                 for idx, box in enumerate(boxes):
                     quality_term[idx] = box.conf
                     features[idx,:] = box.feature
-                similarity_term = self.affinity_kernel(boxes)
+                similarity_term = self.affinity_kernel(boxes, img_size = img_size)
                 #similarity_term = np.dot(features, features.transpose())
                 return self.greedy_solve(boxes, quality_term, similarity_term)
         return []
@@ -67,6 +67,7 @@ class DPP:
         boxes_list = [(i,box,True) for i, box in enumerate(boxes)]
         _lambda = 1.0
         quality_term = np.sqrt(_lambda * np.exp(quality_term))
+        #quality_term = np.exp(- quality_term)
         argMax = quality_term.argmax()
         old_prob = quality_term[argMax]
         box_selected = boxes_list[argMax][1]
@@ -98,8 +99,16 @@ class DPP:
         else:
             return []
 
-    def affinity_kernel(self, tracks, w = 10.0):
+    def affinity_kernel(self, tracks, w = 100.0, img_size = None):
         kernel = np.empty((len(tracks),len(tracks)), dtype = float)
+
+        app = np.empty((len(tracks),len(tracks)), dtype = float)
+        scale = np.empty((len(tracks),len(tracks)), dtype = float)
+        position = np.empty((len(tracks),len(tracks)), dtype = float)
+        (img_width, img_height) = img_size
+        diag = np.sqrt( np.power(img_height, 2) + np.power(img_width, 2) )
+        #diag = np.sqrt(np.power(1920,2) + np.power(1080,2))
+        #area = float(1920 * 1080)
 
         for i in xrange(len(tracks)):
             feat1 = tracks[i].feature
@@ -107,23 +116,23 @@ class DPP:
             y1 = tracks[i].bbox.y
             w1 = tracks[i].bbox.width
             h1 = tracks[i].bbox.height
-            
-            for j in xrange(i, len(tracks)):
+            #print str(x1) + ',' + str(y1) + ',' + str(w1) + ',' + str(h1)
+            for j in xrange(i,len(tracks)):
                 feat2 = tracks[j].feature
                 x2 = tracks[j].bbox.x
                 y2 = tracks[j].bbox.y
                 w2 = tracks[j].bbox.width
                 h2 = tracks[j].bbox.height
+                #app[i,j] = app[j,i] = np.exp( -w * ((feat2-feat1)**2).sum())
+                app[i,j] = app[j,i] = np.dot(feat1,feat2)/(np.linalg.norm(feat1) * np.linalg.norm(feat2))
+                scale[i,j] = scale[j,i] = np.exp( -w * (np.sqrt(np.power(w2 - w1, 2) + np.power(h2 - h1, 2)))/diag )
+                position[i,j] = position[j,i] = np.exp( -w * (np.sqrt(np.power(x2 - x1, 2) + np.power(y2 - y1, 2)))/diag )
+                #scale[i,j] = np.exp( -w * ( ((math.fabs(w2 - w1))/(math.fabs(w2 + w1))) + ((math.fabs(h2 - h1))/(math.fabs(h2 + h1))) ) )
+                #position[i,j] = np.exp( -w * (np.power( (x2 - x1)/(w2),2 ) + np.power((y2 -y1)/(h2), 2) ) )
                 
-                app = np.dot(feat1,feat2)/(np.linalg.norm(feat1) * np.linalg.norm(feat2))
-                #app = np.exp( -w * ((feat1 - feat2)**2).sum() )
-                #motion = np.exp( -w * ( np.power( float(x1-x2)/float() ,2) + np.power( ,2) ) )
-                #print 'horizontal: ' + str(x1) + ' - ' + str(w1) + ' - ' + str(x2) + ' - ' + str(w2)
-                #print 'vertical: ' + str(y1) + ' - ' + str(h1) + ' - ' + str(y2) + ' - ' + str(h2)
-                shape = np.exp( -w * (math.fabs(h1 - h2)/math.fabs(h1 + h2) + math.fabs(w1 - w2)/math.fabs(w1 + w2)))
-                position = np.exp( -w * np.sqrt(np.power(x2 - x1, 2) - np.power(y2 - y1, 2)) )
-
-                kernel[i,j] = app * shape
-                kernel[j,i] = app * shape
-                
+        kernel = app * scale * position
+        #print kernel.flatten()
+        #exit()
+        #kernel = app
+        #1-app 2-scale-position
         return kernel
