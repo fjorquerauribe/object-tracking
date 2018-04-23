@@ -16,10 +16,10 @@ class GMPHDFilter:
     THRESHOLD = 10.0
     SURVIVAL_RATE = 1.0
     SURVIVAL_DECAY = 1.0
-    CLUTTER_RATE = 2.0
-    BIRTH_RATE = 0.1
-    DETECTION_RATE = 0.5
-    POSITION_LIKELIHOOD_STD = 30.0
+    #CLUTTER_RATE = 2.0
+    BIRTH_RATE = 0.8
+    #DETECTION_RATE = 0.5
+    #POSITION_LIKELIHOOD_STD = 30.0
     verbose = False
     initialized = False
 

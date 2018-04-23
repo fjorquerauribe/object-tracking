@@ -107,9 +107,7 @@ class DPP:
         position = np.empty((len(tracks),len(tracks)), dtype = float)
         (img_width, img_height) = img_size
         diag = np.sqrt( np.power(img_height, 2) + np.power(img_width, 2) )
-        #diag = np.sqrt(np.power(1920,2) + np.power(1080,2))
-        #area = float(1920 * 1080)
-
+        
         for i in xrange(len(tracks)):
             feat1 = tracks[i].feature
             x1 = tracks[i].bbox.x
