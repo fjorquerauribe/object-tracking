@@ -83,9 +83,10 @@ def cost_matrix(tracks, new_tracks, diagonal = 1.0, area = 1.0, norm = False):
         position_cost = 1.0 + cost/diagonal
         scale_cost = 1.0 + cost/area
         
-        cost = feature_cost * position_cost * scale_cost
+        #cost = feature_cost * position_cost * scale_cost
+        cost = position_cost * scale_cost
 
-        cost = (cost - cost.min()) / (cost.max() - cost.min())
+        cost = (cost - cost.min()) / (1.0 + cost.max() - cost.min())
         cost = 100.0 * cost
         #print cost
         #cost = position_cost * scale_cost

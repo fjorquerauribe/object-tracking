@@ -86,7 +86,7 @@ class DPP:
                         argMax = i
                         prob = tmpProb
             prob = quality_term[indices].prod() * prob
-            if float(prob)/old_prob > 1.0 + 0.1:
+            if float(prob)/old_prob > 1.0 + self.epsilon:
             #if np.log(prob) > np.log(old_prob):
                 indices = np.append(indices, argMax)
                 old_prob = prob
@@ -121,16 +121,13 @@ class DPP:
                 y2 = tracks[j].bbox.y
                 w2 = tracks[j].bbox.width
                 h2 = tracks[j].bbox.height
-                #app[i,j] = app[j,i] = np.exp( -w * ((feat2-feat1)**2).sum())
-                app[i,j] = app[j,i] = np.dot(feat1,feat2)/(np.linalg.norm(feat1) * np.linalg.norm(feat2))
+                #app[i,j] = app[j,i] = np.dot(feat1,feat2)/(np.linalg.norm(feat1) * np.linalg.norm(feat2))
                 scale[i,j] = scale[j,i] = np.exp( -w * (np.sqrt(np.power(w2 - w1, 2) + np.power(h2 - h1, 2)))/diag )
                 position[i,j] = position[j,i] = np.exp( -w * (np.sqrt(np.power(x2 - x1, 2) + np.power(y2 - y1, 2)))/diag )
+                #app[i,j] = app[j,i] = np.exp( -w * ((feat2-feat1)**2).sum())
                 #scale[i,j] = np.exp( -w * ( ((math.fabs(w2 - w1))/(math.fabs(w2 + w1))) + ((math.fabs(h2 - h1))/(math.fabs(h2 + h1))) ) )
                 #position[i,j] = np.exp( -w * (np.power( (x2 - x1)/(w2),2 ) + np.power((y2 -y1)/(h2), 2) ) )
                 
-        kernel = app * scale * position
-        #print kernel.flatten()
-        #exit()
-        #kernel = app
-        #1-app 2-scale-position
+        #kernel = app * scale * position
+        kernel = scale * position
         return kernel

@@ -35,7 +35,6 @@ if __name__ == '__main__':
         for i in xrange(generator.get_sequences_len()):
             img = generator.get_frame(i)
             gt = generator.get_groundtruth(i)
-
             
             if args['detections']:
                 detections = generator.get_detections(i)
